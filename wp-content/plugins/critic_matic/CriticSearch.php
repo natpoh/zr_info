@@ -75,6 +75,7 @@ class CriticSearch extends AbstractDB {
         // TODO refactor
         'price' => '',
         'current' => '',
+        'exclude'=>array(),
     );
     public $hide_facets = array();
     public $facets = array();
@@ -2645,7 +2646,7 @@ class CriticSearch extends AbstractDB {
         $ret = array('list' => array(), 'count' => 0);
         $this->connect();
         $query_type = 'critics';
-
+        
         if ($show_main) {
             // Filters logic
             $filters_and = $this->get_filters_query($filters, array(), $query_type);
@@ -2659,10 +2660,21 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
+            
+            // Exclude logic for random sort
+            $exclude = '';
+            if ($filters['exclude']){
+                $start=0;
+                $to_exlude = array();
+                foreach ($filters['exclude'] as $ex_id) {
+                    $to_exlude[(int)$ex_id]=(int)$ex_id;
+                }
+                $exclude = " AND id NOT IN(". implode(',', array_keys($to_exlude)).")";
+            }
 
             // Main sql            
             $sql = sprintf("SELECT id, post_date as date, date_add, top_movie,state,mtitle,myear,mpname, type, aid, author_name, author_type, aurating, ip, title, content, aurating, auvote, link, viewtype, weight() w" . $snippet . $custom_fields . $order['select'] . $filters_and['select']
-                    . " FROM critic WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                    . " FROM critic WHERE id>0".$exclude . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             //Get result
             $ret = $this->movie_results($sql, $match, $search_query);
@@ -2739,10 +2751,21 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
+                        
+            // Exclude logic for random sort
+            $exclude = '';
+            if ($filters['exclude']){
+                $start=0;
+                $to_exlude = array();
+                foreach ($filters['exclude'] as $ex_id) {
+                    $to_exlude[(int)$ex_id]=(int)$ex_id;
+                }
+                $exclude = " AND id NOT IN(". implode(',', array_keys($to_exlude)).")";
+            }
 
             // Main sql
             $sql = sprintf("SELECT id, rwt_id, title, release, type, year, add_time, post_name, weight() w, rrt, rrta, rrtg, movie_id" . $custom_fields . $filters_and['select'] . $order['select']
-                    . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                    . " FROM movie_an WHERE id>0" .$exclude. $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
 
@@ -2820,10 +2843,21 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
+            
+                        // Exclude logic for random sort
+            $exclude = '';
+            if ($filters['exclude']){
+                $start=0;
+                $to_exlude = array();
+                foreach ($filters['exclude'] as $ex_id) {
+                    $to_exlude[(int)$ex_id]=(int)$ex_id;
+                }
+                $exclude = " AND id NOT IN(". implode(',', array_keys($to_exlude)).")";
+            }
 
             // Main sql
             $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, movie_id" . $custom_fields . $order['select'] . $filters_and['select']
-                    . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                    . " FROM movie_an WHERE id>0". $exclude. $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
             gmi('main sql');
@@ -2874,10 +2908,21 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
+            
+                                    // Exclude logic for random sort
+            $exclude = '';
+            if ($filters['exclude']){
+                $start=0;
+                $to_exlude = array();
+                foreach ($filters['exclude'] as $ex_id) {
+                    $to_exlude[(int)$ex_id]=(int)$ex_id;
+                }
+                $exclude = " AND id NOT IN(". implode(',', array_keys($to_exlude)).")";
+            }
 
             // Main sql
             $sql = sprintf("SELECT id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link, weight() w" . $custom_fields . $order['select'] . $filters_and['select']
-                    . " FROM filters WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                    . " FROM filters WHERE id>0" . $exclude. $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
             gmi('main sql');
@@ -2928,10 +2973,21 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
+            
+                                                // Exclude logic for random sort
+            $exclude = '';
+            if ($filters['exclude']){
+                $start=0;
+                $to_exlude = array();
+                foreach ($filters['exclude'] as $ex_id) {
+                    $to_exlude[(int)$ex_id]=(int)$ex_id;
+                }
+                $exclude = " AND id NOT IN(". implode(',', array_keys($to_exlude)).")";
+            }
 
             // Main sql
             $sql = sprintf("SELECT id, aid, wp_uid, top_mid, publish, date, last_upd, frating, title, content, type, items, weight() w" . $custom_fields . $order['select'] . $filters_and['select']
-                    . " FROM watchlists WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                    . " FROM watchlists WHERE id>0" .$exclude. $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
 
@@ -2983,12 +3039,21 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
-
+                                                // Exclude logic for random sort
+            $exclude = '';
+            if ($filters['exclude']){
+                $start=0;
+                $to_exlude = array();
+                foreach ($filters['exclude'] as $ex_id) {
+                    $to_exlude[(int)$ex_id]=(int)$ex_id;
+                }
+                $exclude = " AND id NOT IN(". implode(',', array_keys($to_exlude)).")";
+            }
             // Main sql
             $sql = sprintf("SELECT id, comment_ID, comment_post_ID, comment_author, comment_author_email, comment_author_url,comment_author_IP,
                     comment_date, comment_date_gmt, comment_content, cstatus as comment_approved, comment_type, comment_parent, user_id, ctype as post_type, 
                     aid,comment_childs,comment_hide,last_upd, frating, weight() w" . $custom_fields . $order['select'] . $filters_and['select']
-                    . " FROM comments WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                    . " FROM comments WHERE id>0" .$exclude. $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
 

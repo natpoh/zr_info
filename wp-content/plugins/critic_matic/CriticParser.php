@@ -1260,6 +1260,7 @@ class CPAdmin extends CriticParser {
         0 => 'No post',
     );
     public $yt_per_page = array(
+        1 => 1,
         5 => 5,
         10 => 10,
         25 => 25,
@@ -2303,7 +2304,7 @@ class CPCron {
         // Get last urls
         $urls = $this->cp->get_last_urls($urls_count, $status, $campaign->id);
         if ($debug) {
-            print_r($urls);
+            print_r(array('urls', $urls));
         }
         $count = sizeof($urls);
         if ($count) {
@@ -2318,6 +2319,9 @@ class CPCron {
             $parser_status = 3;
             $this->cp->update_campaign($campaign->id, array('parser_status' => $parser_status));
             $message = 'All URLS parsed. Parser paused';
+            if ($debug) {
+                print $message;
+            }
             $this->cp->log_info($message, $campaign->id, 0, 0);
         }
 
@@ -3532,6 +3536,10 @@ class CPParsing {
                 // Check the post already in db
                 $post_exist = $this->cm->get_post_by_link_hash($link_hash);
 
+                if ($debug) {
+                    print_r(array('post_exist', $post_exist));
+                }
+
                 // 1. Validate campaign URL rules
                 if ($options['use_rules']) {
 
@@ -3558,6 +3566,9 @@ class CPParsing {
 
                         $cprules = $this->cp->get_cprules();
                         $message = 'Check URL:' . $new_status . '. ' . $cprules->show_check($check);
+                        if ($debug) {
+                            print_r(array($message));
+                        }
                         $this->cp->log_warn($message, $campaign->id, $item->id, 3);
                         return $changed;
                     }
@@ -3596,6 +3607,11 @@ class CPParsing {
                         $title = isset($items['t']) ? trim($items['t']) : '';
                         $author = isset($items['a']) ? trim(strip_tags($items['a'])) : '';
                         $date = isset($items['y']) ? strtotime($items['y']) : '';
+                    }
+
+                    if ($debug) {
+                        print_r(array('title', $title));
+                        print_r(array('content', $content));
                     }
 
                     if ($content && $title) {
@@ -3691,6 +3707,10 @@ class CPParsing {
                                 }
                                 return $changed;
                             }
+                        }
+
+                        if ($debug) {
+                            print_r(array('log_message', $log_message));
                         }
 
                         // Update url         
@@ -3813,7 +3833,7 @@ class CPYoutube {
         return $video_id;
     }
 
-    public function yt_video_data($url, $cache=true) {
+    public function yt_video_data($url, $cache = true) {
 
         $video_id = $this->find_url_video_id($url);
 
@@ -4159,9 +4179,9 @@ class CPRules {
         'w' => 0,
         'a' => 0,
         'n' => 0,
-      /*  'vmat'=>'',        
-        'vrul'=>'',
-        'vrat'=>0,*/
+            /*  'vmat'=>'',        
+              'vrul'=>'',
+              'vrat'=>0, */
     );
     public $rules_fields = array(
         'a' => 'Author',
@@ -4184,13 +4204,13 @@ class CPRules {
     public function __construct($cp = '') {
         $this->cp = $cp ? $cp : new CriticParser();
     }
-    
-    public $parser_valid_rules_type = array(        
+
+    public $parser_valid_rules_type = array(
         'z' => 'Above zero',
         'e' => 'Exist',
         'm' => 'Regexp match',
     );
-    
+
     /*
      * Rules
      */
@@ -4358,273 +4378,273 @@ class CPRules {
                     <?php } ?>
                 </tbody>
             </table>    <?php
-        }
-    }
-
-    public function sort_rules_by_weight($rules) {
-        $sort_rules = $rules;
-        if ($rules) {
-            $rules_w = array();
-            foreach ($rules as $key => $value) {
-                $rules_w[$key] = $value['w'];
-            }
-            asort($rules_w);
-            $sort_rules = array();
-            foreach ($rules_w as $key => $value) {
-                $sort_rules[$key] = $rules[$key];
-            }
-        }
-        return $sort_rules;
-    }
-
-    public function rules_form($form_state) {
-        $rule_exists = array();
-
-        $to_remove = isset($form_state['remove_rule']) ? $form_state['remove_rule'] : array();
-
-        // Exists rules
-        foreach ($form_state as $name => $value) {
-            if (strstr($name, 'rule_id_')) {
-                $key = $value;
-                if (in_array($key, $to_remove)) {
-                    continue;
                 }
-                $upd_rule = array(
-                    'r' => base64_encode(stripslashes($form_state['rule_r_' . $key])),
-                    'c' => $form_state['rule_c_' . $key],
-                    'f' => $form_state['rule_f_' . $key],
-                    'a' => $form_state['rule_a_' . $key],
-                    'w' => $form_state['rule_w_' . $key]
-                );
-                $rule_exists[$key] = $upd_rule;
             }
-        }
 
-        // New rule
-        if ($form_state['new_rule_r']) {
-
-            $old_key = 0;
-            if ($rule_exists) {
-                krsort($rule_exists);
-                $old_key = array_key_first($rule_exists);
-            }
-            $new_rule_key = $old_key + 1;
-            $new_rule = array(
-                'r' => base64_encode(stripslashes($form_state['new_rule_r'])),
-                'c' => $form_state['new_rule_c'],
-                'f' => $form_state['new_rule_f'],
-                'a' => $form_state['new_rule_a'],
-                'w' => $form_state['new_rule_w']
-            );
-            $rule_exists[$new_rule_key] = $new_rule;
-        }
-
-        ksort($rule_exists);
-
-        return $rule_exists;
-    }
-
-    public function check_post_rules($rules, $status, $test_post, $all = false) {
-        $check = '';
-        if ($rules && $test_post) {
-            $check = $this->check_post($rules, $test_post, $all);
-            if ($check) {
-                foreach ($check as $key => $action) {
-                    if ($action != $status) {
-                        // Change post status
-                        $status = $action;
-                        break;
+            public function sort_rules_by_weight($rules) {
+                $sort_rules = $rules;
+                if ($rules) {
+                    $rules_w = array();
+                    foreach ($rules as $key => $value) {
+                        $rules_w[$key] = $value['w'];
+                    }
+                    asort($rules_w);
+                    $sort_rules = array();
+                    foreach ($rules_w as $key => $value) {
+                        $sort_rules[$key] = $rules[$key];
                     }
                 }
+                return $sort_rules;
             }
-        }
-        return array('data' => $check, 'status' => $status);
-    }
 
-    public function check_post($rules, $post, $all = false) {        
-        $results = array();
-        if ($rules && sizeof($rules)) {
-            $rules_w = $this->sort_rules_by_weight($rules);           
-            foreach ($rules_w as $key => $rule) {
-                if ($rule['r']) {
-                    $reg = base64_decode($rule['r']);
-                    $fields = isset($rule['f']) ? $rule['f'] : array();
-                    if ($fields) {
-                        foreach ($fields as $field) {
-                            if (isset($post[$field])) {
-                                $content = $post[$field];                                
-                                $match = preg_match($reg, $content);                                
-                                $condition = isset($rule['c']) && $rule['c'] == 1 ? true : false;
-                                $result = -1;
-                                if ($match && $condition) {
-                                    $result = $rule['a'];
-                                } else if (!$match && !$condition) {
-                                    $result = $rule['a'];
+            public function rules_form($form_state) {
+                $rule_exists = array();
+
+                $to_remove = isset($form_state['remove_rule']) ? $form_state['remove_rule'] : array();
+
+                // Exists rules
+                foreach ($form_state as $name => $value) {
+                    if (strstr($name, 'rule_id_')) {
+                        $key = $value;
+                        if (in_array($key, $to_remove)) {
+                            continue;
+                        }
+                        $upd_rule = array(
+                            'r' => base64_encode(stripslashes($form_state['rule_r_' . $key])),
+                            'c' => $form_state['rule_c_' . $key],
+                            'f' => $form_state['rule_f_' . $key],
+                            'a' => $form_state['rule_a_' . $key],
+                            'w' => $form_state['rule_w_' . $key]
+                        );
+                        $rule_exists[$key] = $upd_rule;
+                    }
+                }
+
+                // New rule
+                if ($form_state['new_rule_r']) {
+
+                    $old_key = 0;
+                    if ($rule_exists) {
+                        krsort($rule_exists);
+                        $old_key = array_key_first($rule_exists);
+                    }
+                    $new_rule_key = $old_key + 1;
+                    $new_rule = array(
+                        'r' => base64_encode(stripslashes($form_state['new_rule_r'])),
+                        'c' => $form_state['new_rule_c'],
+                        'f' => $form_state['new_rule_f'],
+                        'a' => $form_state['new_rule_a'],
+                        'w' => $form_state['new_rule_w']
+                    );
+                    $rule_exists[$new_rule_key] = $new_rule;
+                }
+
+                ksort($rule_exists);
+
+                return $rule_exists;
+            }
+
+            public function check_post_rules($rules, $status, $test_post, $all = false) {
+                $check = '';
+                if ($rules && $test_post) {
+                    $check = $this->check_post($rules, $test_post, $all);
+                    if ($check) {
+                        foreach ($check as $key => $action) {
+                            if ($action != $status) {
+                                // Change post status
+                                $status = $action;
+                                break;
+                            }
+                        }
+                    }
+                }
+                return array('data' => $check, 'status' => $status);
+            }
+
+            public function check_post($rules, $post, $all = false) {
+                $results = array();
+                if ($rules && sizeof($rules)) {
+                    $rules_w = $this->sort_rules_by_weight($rules);
+                    foreach ($rules_w as $key => $rule) {
+                        if ($rule['r']) {
+                            $reg = base64_decode($rule['r']);
+                            $fields = isset($rule['f']) ? $rule['f'] : array();
+                            if ($fields) {
+                                foreach ($fields as $field) {
+                                    if (isset($post[$field])) {
+                                        $content = $post[$field];
+                                        $match = preg_match($reg, $content);
+                                        $condition = isset($rule['c']) && $rule['c'] == 1 ? true : false;
+                                        $result = -1;
+                                        if ($match && $condition) {
+                                            $result = $rule['a'];
+                                        } else if (!$match && !$condition) {
+                                            $result = $rule['a'];
+                                        }
+                                        if ($result >= 0) {
+                                            $results[$key] = $result;
+                                            break;
+                                        }
+                                    }
                                 }
-                                if ($result >= 0) {
-                                    $results[$key] = $result;
-                                    break;
+                            }
+                        }
+                        if (!$all && $results) {
+                            break;
+                        }
+                    }
+                }
+
+                return $results;
+            }
+
+            /*
+             * Rules parser
+             */
+
+            public function sort_reg_rules_by_weight($rules) {
+                $sort_rules = $rules;
+                if ($rules) {
+                    $rules_w = array();
+                    foreach ($rules as $key => $value) {
+                        $rules_w[$key] = $value['w'];
+                    }
+                    asort($rules_w);
+                    $sort_rules = array();
+                    foreach ($this->parser_rules_fields as $id => $item) {
+                        foreach ($rules_w as $key => $value) {
+                            if ($rules[$key]['f'] == $id) {
+                                $sort_rules[$key] = $this->get_valid_parser_rule($rules[$key]);
+                            }
+                        }
+                    }
+                }
+                return $sort_rules;
+            }
+
+            public function get_valid_parser_rule($rule) {
+                foreach ($this->def_reg_rule as $key => $value) {
+                    if (!isset($rule[$key])) {
+                        $rule[$key] = $value;
+                    }
+                }
+
+                return $rule;
+            }
+
+            public function check_reg_post($rules, $content, $rule_type = '', $link = '') {
+                $results = array();
+                $rule_type_exist = 0;
+                if ($rules && sizeof($rules)) {
+                    $rules_w = $this->sort_reg_rules_by_weight($rules);
+
+                    /*
+                     * (
+                      [f] => a
+                      [t] => x
+                      [r] => Ly9kaXZbQGNsYXNzPSdhcnRpY2xlLWhlYWRlcl9fbWV0YS1hdXRob3ItY29udGFpbmVyJ10vYQ==
+                      [m] =>
+                      [c] =>
+                      [w] => 0
+                      [a] => 1
+                      )
+                     */
+
+                    $clear_content = array();
+                    foreach ($this->parser_rules_fields as $type => $title) {
+                        if ($rule_type && $type != $rule_type) {
+                            continue;
+                        }
+                        $i = 0;
+                        foreach ($rules_w as $key => $rule) {
+                            // Clear content logic
+                            $data_field = isset($rule['d']) ? $rule['d'] : 'r';
+                            if ($data_field == 'r') {
+                                $rule_content = $content;
+                            } else {
+                                // Get clear content
+                                if (!$clear_content) {
+
+                                    $clear_content = $this->cp->clear_read($link, $content);
+                                }
+                                if ($data_field == 'ca') {
+                                    $rule_content = isset($clear_content['author']) ? $clear_content['author'] : '';
+                                } else if ($data_field == 'ct') {
+                                    $rule_content = isset($clear_content['title']) ? $clear_content['title'] : '';
+                                } else if ($data_field == 'cc') {
+                                    $rule_content = isset($clear_content['content']) ? $clear_content['content'] : '';
+                                }
+                            }
+
+                            if ($type == $rule['f']) {
+                                if ($rule['a'] != 1) {
+                                    continue;
+                                }
+                                if ($rule['n'] == 1) {
+                                    $i += 1;
+                                }
+
+                                if (!isset($results[$type][$i])) {
+                                    $results[$type][$i] = $rule_content;
+                                }
+                                $results[$type][$i] = $this->use_reg_rule($rule, $results[$type][$i]);
+
+                                if ($rule_type && $rule_type == $type) {
+                                    $rule_type_exist = 1;
                                 }
                             }
                         }
                     }
                 }
-                if (!$all && $results) {
-                    break;
+
+                //implode results
+                $ret = array();
+                foreach ($results as $type => $items) {
+                    $ret[$type] = implode('', $items);
                 }
-            }
-        }
-        
-        return $results;
-    }
 
-    /*
-     * Rules parser
-     */
+                if ($rule_type && $rule_type_exist == 0) {
+                    $ret[$rule_type] = $content;
+                }
 
-    public function sort_reg_rules_by_weight($rules) {
-        $sort_rules = $rules;
-        if ($rules) {
-            $rules_w = array();
-            foreach ($rules as $key => $value) {
-                $rules_w[$key] = $value['w'];
+                return $ret;
             }
-            asort($rules_w);
-            $sort_rules = array();
-            foreach ($this->parser_rules_fields as $id => $item) {
-                foreach ($rules_w as $key => $value) {
-                    if ($rules[$key]['f'] == $id) {
-                        $sort_rules[$key] = $this->get_valid_parser_rule($rules[$key]);
+
+            public function check_reg_post_yt($rules, $item) {
+                /*
+                  $item = array(
+                  'u' => $link,
+                  'd' => $desc,
+                  't' => $title,
+                  );
+                 */
+                foreach ($item as $key => $content) {
+                    if ($key == 'u') {
+                        continue;
                     }
+                    $check_key = $this->check_reg_post($rules, $content, $key);
+                    $item[$key] = $check_key[$key];
                 }
+                return $item;
             }
-        }
-        return $sort_rules;
-    }
 
-    public function get_valid_parser_rule($rule) {
-        foreach ($this->def_reg_rule as $key => $value) {
-            if (!isset($rule[$key])) {
-                $rule[$key] = $value;
-            }
-        }
+            public function show_parser_rules($rules = array(), $edit = true, $type = 0, $check = array()) {
+                if ($rules || $edit) {
+                    $rules = $this->sort_reg_rules_by_weight($rules);
+                    $disabled = '';
 
-        return $rule;
-    }
-
-    public function check_reg_post($rules, $content, $rule_type = '', $link = '') {
-        $results = array();
-        $rule_type_exist = 0;
-        if ($rules && sizeof($rules)) {
-            $rules_w = $this->sort_reg_rules_by_weight($rules);
-
-            /*
-             * (
-              [f] => a
-              [t] => x
-              [r] => Ly9kaXZbQGNsYXNzPSdhcnRpY2xlLWhlYWRlcl9fbWV0YS1hdXRob3ItY29udGFpbmVyJ10vYQ==
-              [m] =>
-              [c] =>
-              [w] => 0
-              [a] => 1
-              )
-             */
-
-            $clear_content = array();
-            foreach ($this->parser_rules_fields as $type => $title) {
-                if ($rule_type && $type != $rule_type) {
-                    continue;
-                }
-                $i = 0;
-                foreach ($rules_w as $key => $rule) {
-                    // Clear content logic
-                    $data_field = isset($rule['d']) ? $rule['d'] : 'r';
-                    if ($data_field == 'r') {
-                        $rule_content = $content;
-                    } else {
-                        // Get clear content
-                        if (!$clear_content) {
-
-                            $clear_content = $this->cp->clear_read($link, $content);
-                        }
-                        if ($data_field == 'ca') {
-                            $rule_content = isset($clear_content['author']) ? $clear_content['author'] : '';
-                        } else if ($data_field == 'ct') {
-                            $rule_content = isset($clear_content['title']) ? $clear_content['title'] : '';
-                        } else if ($data_field == 'cc') {
-                            $rule_content = isset($clear_content['content']) ? $clear_content['content'] : '';
-                        }
+                    $parser_rules_fields = $this->parser_rules_fields;
+                    if ($type == 1) {
+                        unset($parser_rules_fields['a']);
+                        unset($parser_rules_fields['y']);
                     }
 
-                    if ($type == $rule['f']) {
-                        if ($rule['a'] != 1) {
-                            continue;
-                        }
-                        if ($rule['n'] == 1) {
-                            $i += 1;
-                        }
+                    $data_fields = $this->parser_data_fields;
 
-                        if (!isset($results[$type][$i])) {
-                            $results[$type][$i] = $rule_content;
-                        }
-                        $results[$type][$i] = $this->use_reg_rule($rule, $results[$type][$i]);
-
-                        if ($rule_type && $rule_type == $type) {
-                            $rule_type_exist = 1;
-                        }
-                    }
-                }
-            }
-        }
-
-        //implode results
-        $ret = array();
-        foreach ($results as $type => $items) {
-            $ret[$type] = implode('', $items);
-        }
-
-        if ($rule_type && $rule_type_exist == 0) {
-            $ret[$rule_type] = $content;
-        }
-
-        return $ret;
-    }
-
-    public function check_reg_post_yt($rules, $item) {
-        /*
-          $item = array(
-          'u' => $link,
-          'd' => $desc,
-          't' => $title,
-          );
-         */
-        foreach ($item as $key => $content) {
-            if ($key == 'u') {
-                continue;
-            }
-            $check_key = $this->check_reg_post($rules, $content, $key);
-            $item[$key] = $check_key[$key];
-        }
-        return $item;
-    }
-
-    public function show_parser_rules($rules = array(), $edit = true, $type = 0, $check = array()) {
-        if ($rules || $edit) {
-            $rules = $this->sort_reg_rules_by_weight($rules);
-            $disabled = '';
-
-            $parser_rules_fields = $this->parser_rules_fields;
-            if ($type == 1) {
-                unset($parser_rules_fields['a']);
-                unset($parser_rules_fields['y']);
-            }
-
-            $data_fields = $this->parser_data_fields;
-
-            if (!$edit) {
-                $disabled = ' disabled ';
-                $title = __('Rules parser');
-                ?>
+                    if (!$edit) {
+                        $disabled = ' disabled ';
+                        $title = __('Rules parser');
+                        ?>
                 <h2><?php print $title ?></h2>            
             <?php } ?>
             <table id="rules" class="wp-list-table widefat striped table-view-list">
@@ -4639,12 +4659,12 @@ class CPRules {
                         <th><?php print __('Data field') ?></th> 
                         <th><?php print __('Weight') ?></th> 
                         <?php /*
-                        <th><?php print __('Valid Rating') ?></th>
-                        <th><?php print __('Valid Rule') ?></th>
-                        <th><?php print __('Valid Match') ?></th>                         
+                          <th><?php print __('Valid Rating') ?></th>
+                          <th><?php print __('Valid Rule') ?></th>
+                          <th><?php print __('Valid Match') ?></th>
                          */ ?>
                         <th><?php print __('Comment') ?></th>                       
-                        
+
                         <th><?php print __('Active') ?></th>
                         <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
@@ -4723,34 +4743,34 @@ class CPRules {
                                 <td>
                                     <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
-                                 <?php /*
-                                <td>
-                                    <input type="text" name="rule_reg_vrat_<?php print $rid ?>" class="rule_w" value="<?php print $rule['vrat'] ?>"<?php print $disabled ?>>
-                                </td>
-                                
-                                <td>                                    
-                                    <select name="rule_reg_vmat_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['vmat'];
-                                        foreach ($this->parser_valid_rules_type as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
-                                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
-                                            <?php
-                                        }
-                                        ?>                          
-                                    </select>    
-                                </td>
-                                
-                                <td>
-                                    <input type="text" name="rule_reg_vrul_<?php print $rid ?>" class="rule_m" value="<?php print $rule['vrul'] ?>"<?php print $disabled ?>>
-                                </td>
-                                  
-                                  */ ?>
+                                <?php /*
+                                  <td>
+                                  <input type="text" name="rule_reg_vrat_<?php print $rid ?>" class="rule_w" value="<?php print $rule['vrat'] ?>"<?php print $disabled ?>>
+                                  </td>
+
+                                  <td>
+                                  <select name="rule_reg_vmat_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                  <?php
+                                  $con = $rule['vmat'];
+                                  foreach ($this->parser_valid_rules_type as $key => $name) {
+                                  $selected = ($key == $con) ? 'selected' : '';
+                                  ?>
+                                  <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>
+                                  <?php
+                                  }
+                                  ?>
+                                  </select>
+                                  </td>
+
+                                  <td>
+                                  <input type="text" name="rule_reg_vrul_<?php print $rid ?>" class="rule_m" value="<?php print $rule['vrul'] ?>"<?php print $disabled ?>>
+                                  </td>
+
+                                 */ ?>
                                 <td>
                                     <input type="text" name="rule_reg_c_<?php print $rid ?>" class="rule_c" value="<?php print $rule['c'] ?>"<?php print $disabled ?>>
                                 </td>
-                                
+
                                 <td>
                                     <?php
                                     $checked = '';
@@ -4837,31 +4857,31 @@ class CPRules {
                                     ?>                          
                                 </select> 
                             </td>
-                                                        <td>
+                            <td>
                                 <input type="text" name="reg_new_rule_w" class="rule_w" value="0">
                             </td>
-                             <?php /*
-                            <td>
-                                <input type="text" name="reg_new_rule_vrat" class="rule_w" value="0">
-                            </td>
-                            <td>
-                                <select name="reg_new_rule_vmat" class="condition">
-                                    <?php foreach ($this->parser_valid_rules_type as $key => $name) { ?>
-                                        <option value="<?php print $key ?>"><?php print $name ?></option>                                
-                                        <?php
-                                    }
-                                    ?>                         
-                                </select> 
-                            </td>
-                            
-                            <td>
-                                <input type="text" name="reg_new_rule_vrul" class="rule_m" value="">
-                                <div class="desc">
-                                    Example: /(pattern)/Uis
-                                </div>
-                            </td>                            
-                              
-                              */ ?>
+                            <?php /*
+                              <td>
+                              <input type="text" name="reg_new_rule_vrat" class="rule_w" value="0">
+                              </td>
+                              <td>
+                              <select name="reg_new_rule_vmat" class="condition">
+                              <?php foreach ($this->parser_valid_rules_type as $key => $name) { ?>
+                              <option value="<?php print $key ?>"><?php print $name ?></option>
+                              <?php
+                              }
+                              ?>
+                              </select>
+                              </td>
+
+                              <td>
+                              <input type="text" name="reg_new_rule_vrul" class="rule_m" value="">
+                              <div class="desc">
+                              Example: /(pattern)/Uis
+                              </div>
+                              </td>
+
+                             */ ?>
                             <td>
                                 <input type="text" name="reg_new_rule_c" class="rule_c" value="" placeholder="Comment">
                             </td>
@@ -4874,148 +4894,149 @@ class CPRules {
                     <?php } ?>
                 </tbody>
             </table>    <?php
-        }
-    }
-
-    public function show_check($check) {
-        $ret = '';
-        if ($check['data']) {
-            foreach ($check['data'] as $key => $value) {
-                $ret = 'Result: <b>' . $this->rules_actions[$value] . '</b>. Rule id: ' . $key;
-                break;
-            }
-        }
-        return $ret;
-    }
-
-    private function use_reg_rule($rule, $content) {
-        $reg = base64_decode($rule['r']);
-
-        if ($rule['t'] == 'x') {
-            $content = $this->get_dom($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'm') {
-            $content = $this->get_reg_match($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'r') {
-            $content = $this->get_reg($reg, $rule['m'], $content);
-        }
-
-        return $content;
-    }
-
-    public function parser_rules_form($form_state) {
-        $rule_exists = array();
-
-        $to_remove = isset($form_state['remove_reg_rule']) ? $form_state['remove_reg_rule'] : array();
-
-        // Exists rules
-        foreach ($form_state as $name => $value) {
-            if (strstr($name, 'rule_reg_id_')) {
-                $key = $value;
-                if (in_array($key, $to_remove)) {
-                    continue;
-                }
-                $upd_rule = array(
-                    'f' => $form_state['rule_reg_f_' . $key],
-                    't' => $form_state['rule_reg_t_' . $key],
-                    'r' => base64_encode(stripslashes($form_state['rule_reg_r_' . $key])),
-                    'm' => $form_state['rule_reg_m_' . $key],
-                    'c' => $form_state['rule_reg_c_' . $key],
-                    'w' => $form_state['rule_reg_w_' . $key],
-                    'a' => $form_state['rule_reg_a_' . $key],
-                    'n' => $form_state['rule_reg_n_' . $key],
-                    'd' => $form_state['rule_reg_d_' . $key]
-                );
-                $rule_exists[$key] = $upd_rule;
-            }
-        }
-
-        // New rule
-        if ($form_state['reg_new_rule_r'] || $form_state['reg_new_rule_t'] == 'n') {
-
-            $old_key = 0;
-            if ($rule_exists) {
-                krsort($rule_exists);
-                $old_key = array_key_first($rule_exists);
-            }
-            $new_rule_key = $old_key + 1;
-            $new_rule = array(
-                'f' => $form_state['reg_new_rule_f'],
-                't' => $form_state['reg_new_rule_t'],
-                'r' => base64_encode(stripslashes($form_state['reg_new_rule_r'])),
-                'm' => $form_state['reg_new_rule_m'],
-                'c' => $form_state['reg_new_rule_c'],
-                'w' => $form_state['reg_new_rule_w'],
-                'a' => $form_state['reg_new_rule_a'],
-                'n' => $form_state['reg_new_rule_n'],
-                'd' => $form_state['reg_new_rule_d']
-            );
-            $rule_exists[$new_rule_key] = $new_rule;
-        }
-
-        ksort($rule_exists);
-
-        return $rule_exists;
-    }
-
-    private function get_dom($rule, $match_str, $code) {
-        $content = '';
-        if ($rule && $code) {
-            $code = $this->cp->force_balance_tags($code);
-            $dom = new DOMDocument;
-            libxml_use_internal_errors(true);
-            $dom->loadHTML($code);
-            $xpath = new DOMXPath($dom);
-            $result = $xpath->query($rule);
-            if (!is_null($result)) {
-                foreach ($result as $element) {
-                    $content = $this->getNodeInnerHTML($element);
-                    break;
                 }
             }
-        }
-        unset($dom);
-        unset($xpath);
-        if ($match_str) {
-            $content = str_replace('$1', $content, $match_str);
-        }
-        return $content;
-    }
 
-    private function getNodeInnerHTML(DOMNode $oNode) {
-        $oDom = new DOMDocument();
-        foreach ($oNode->childNodes as $oChild) {
-            $oDom->appendChild($oDom->importNode($oChild, true));
-        }
-        return $oDom->saveHTML();
-    }
+            public function show_check($check) {
+                $ret = '';
+                if ($check['data']) {
+                    foreach ($check['data'] as $key => $value) {
+                        $ret = 'Result: <b>' . $this->rules_actions[$value] . '</b>. Rule id: ' . $key;
+                        break;
+                    }
+                }
+                return $ret;
+            }
 
-    private function get_reg($rule, $match_str, $content) {
-        // Filters reg
-        if ($rule) {
-            $content = preg_replace($rule, $match_str, $content);
-        }
-        return $content;
-    }
+            private function use_reg_rule($rule, $content) {
+                $reg = base64_decode($rule['r']);
 
-    private function get_reg_match($rule, $match_str, $content) {
-        // Filters match
-        $ret = '';
-        if ($rule && $content) {
-            if (preg_match($rule, $content, $match)) {
-                // Math reg
-                if (preg_match_all('/\$([0-9]+)/', $match_str, $match_all)) {
-                    for ($i = 0; $i < sizeof($match_all[0]); $i++) {
-                        $num = (int) $match_all[1][$i];
-                        if (!$ret) {
-                            $ret = $match_str;
+                if ($rule['t'] == 'x') {
+                    $content = $this->get_dom($reg, $rule['m'], $content);
+                } else if ($rule['t'] == 'm') {
+                    $content = $this->get_reg_match($reg, $rule['m'], $content);
+                } else if ($rule['t'] == 'r') {
+                    $content = $this->get_reg($reg, $rule['m'], $content);
+                }
+
+                return $content;
+            }
+
+            public function parser_rules_form($form_state) {
+                $rule_exists = array();
+
+                $to_remove = isset($form_state['remove_reg_rule']) ? $form_state['remove_reg_rule'] : array();
+
+                // Exists rules
+                foreach ($form_state as $name => $value) {
+                    if (strstr($name, 'rule_reg_id_')) {
+                        $key = $value;
+                        if (in_array($key, $to_remove)) {
+                            continue;
                         }
-                        if (isset($match[$num])) {
-                            $ret = str_replace($match_all[0][$i], trim($match[$num]), $ret);
+                        $upd_rule = array(
+                            'f' => $form_state['rule_reg_f_' . $key],
+                            't' => $form_state['rule_reg_t_' . $key],
+                            'r' => base64_encode(stripslashes($form_state['rule_reg_r_' . $key])),
+                            'm' => $form_state['rule_reg_m_' . $key],
+                            'c' => $form_state['rule_reg_c_' . $key],
+                            'w' => $form_state['rule_reg_w_' . $key],
+                            'a' => $form_state['rule_reg_a_' . $key],
+                            'n' => $form_state['rule_reg_n_' . $key],
+                            'd' => $form_state['rule_reg_d_' . $key]
+                        );
+                        $rule_exists[$key] = $upd_rule;
+                    }
+                }
+
+                // New rule
+                if ($form_state['reg_new_rule_r'] || $form_state['reg_new_rule_t'] == 'n') {
+
+                    $old_key = 0;
+                    if ($rule_exists) {
+                        krsort($rule_exists);
+                        $old_key = array_key_first($rule_exists);
+                    }
+                    $new_rule_key = $old_key + 1;
+                    $new_rule = array(
+                        'f' => $form_state['reg_new_rule_f'],
+                        't' => $form_state['reg_new_rule_t'],
+                        'r' => base64_encode(stripslashes($form_state['reg_new_rule_r'])),
+                        'm' => $form_state['reg_new_rule_m'],
+                        'c' => $form_state['reg_new_rule_c'],
+                        'w' => $form_state['reg_new_rule_w'],
+                        'a' => $form_state['reg_new_rule_a'],
+                        'n' => $form_state['reg_new_rule_n'],
+                        'd' => $form_state['reg_new_rule_d']
+                    );
+                    $rule_exists[$new_rule_key] = $new_rule;
+                }
+
+                ksort($rule_exists);
+
+                return $rule_exists;
+            }
+
+            private function get_dom($rule, $match_str, $code) {
+                $content = '';
+                if ($rule && $code) {
+                    $code = $this->cp->force_balance_tags($code);
+                    $dom = new DOMDocument;
+                    libxml_use_internal_errors(true);
+                    $dom->loadHTML($code);
+                    $xpath = new DOMXPath($dom);
+                    $result = $xpath->query($rule);
+                    if (!is_null($result)) {
+                        foreach ($result as $element) {
+                            $content = $this->getNodeInnerHTML($element);
+                            break;
                         }
                     }
                 }
+                unset($dom);
+                unset($xpath);
+                if ($match_str) {
+                    $content = str_replace('$1', $content, $match_str);
+                }
+                return $content;
+            }
+
+            private function getNodeInnerHTML(DOMNode $oNode) {
+                $oDom = new DOMDocument();
+                foreach ($oNode->childNodes as $oChild) {
+                    $oDom->appendChild($oDom->importNode($oChild, true));
+                }
+                return $oDom->saveHTML();
+            }
+
+            private function get_reg($rule, $match_str, $content) {
+                // Filters reg
+                if ($rule) {
+                    $content = preg_replace($rule, $match_str, $content);
+                }
+                return $content;
+            }
+
+            private function get_reg_match($rule, $match_str, $content) {
+                // Filters match
+                $ret = '';
+                if ($rule && $content) {
+                    if (preg_match($rule, $content, $match)) {
+                        // Math reg
+                        if (preg_match_all('/\$([0-9]+)/', $match_str, $match_all)) {
+                            for ($i = 0; $i < sizeof($match_all[0]); $i++) {
+                                $num = (int) $match_all[1][$i];
+                                if (!$ret) {
+                                    $ret = $match_str;
+                                }
+                                if (isset($match[$num])) {
+                                    $ret = str_replace($match_all[0][$i], trim($match[$num]), $ret);
+                                }
+                            }
+                        }
+                    }
+                }
+                return $ret;
             }
         }
-        return $ret;
-    }
-}
+        

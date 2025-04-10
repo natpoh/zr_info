@@ -11,12 +11,9 @@
  */
 class AbstractFunctions {
 
-    private $sync_data = false;
-    private $sync_client = false;
-    public function __construct() {
-        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;     
-        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;       
-    }
+    private $sync_data = DB_SYNC_DATA == 1 ? true : false;
+    private $sync_client = DB_SYNC_MODE == 2 ? true : false;
+
     public function link_hash($link) {
         $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);
@@ -38,27 +35,37 @@ class AbstractFunctions {
         $update = false;
         $id = 0;
 
+        global $db_debug;
+
         if ($this->sync_client) {
             // Client mode
             // Get id
             $id = $this->get_remote_id($db, $request);
+
+            if ($db_debug) {
+                print_r(array('sync_insert_data', 'Client mode id', $id));
+            }
+
             if (!$id) {
                 $ex_msg = 'Can not get id from the Server. Table:' . $db;
                 throw new Exception($ex_msg);
                 exit;
             }
             // Field exist
-            if ($this->fieldExist('id', $id, $db)) {
+            if ($this->fieldExist('id', $id, $db)) {                
+                if ($db_debug) {
+                    print_r(array('sync_insert_data', 'Field exist, update:', $data));
+                }
                 $update = true;
                 $this->db_update($data, $db, $id);
             }
             $data['id'] = (int) $id;
         }
 
-        if (!$update) {
+        if ($update == false) {
             $last_id = $this->getInsertId('id', $db);
             $this->db_insert($data, $db);
-            $id = $this->getInsertId('id', $db);
+            $id = $this->getInsertId('id', $db);            
             if ($id == $last_id) {
                 // Insert error
                 $id = 0;
@@ -66,6 +73,9 @@ class AbstractFunctions {
         }
 
         if ($id && $this->sync_data) {
+            if ($db_debug) {
+                print_r(array('create_commit_update', $id, $db, $priority));
+            }
             $this->create_commit_update($id, $db, $priority);
         }
 
@@ -119,14 +129,24 @@ class AbstractFunctions {
 
     // Sync
     public function get_remote_id($db = '', $request = '') {
+        
+        global $db_debug;
+        try {
+            if (!class_exists('Import')) {
+                include ABSPATH . "analysis/export/import_db.php";
+            }
 
-        if (!class_exists('Import')) {
-            include ABSPATH . "analysis/export/import_db.php";
+            $array = array('table' => $db, 'column' => 'id', 'request' => $request);
+            $id_array = Import::get_remote_id($array, $db_debug);
+            $rid = $id_array['id'];
+        } catch (Exception $exc) {
+            $rid = 0;
+            if ($db_debug){
+                echo $exc->getTraceAsString();
+            }
         }
 
-        $array = array('table' => $db, 'column' => 'id', 'request' => $request);
-        $id_array = Import::get_remote_id($array);
-        $rid = $id_array['id'];
+
 
         return $rid;
     }

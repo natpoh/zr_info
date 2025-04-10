@@ -70,7 +70,7 @@ class CriticMatic extends AbstractDB {
     );
     public $post_show_in = array(
         0 => 'Critic',
-        1 => 'Media',        
+        1 => 'Media',
     );
     public $post_view_type_url = array(
         'www.youtube.com' => 1,
@@ -204,10 +204,10 @@ class CriticMatic extends AbstractDB {
     private $reader_city;
     private $geoip;
     /* Sync */
-    public $sync_status = 0;
-    public $sync_client = true;
-    public $sync_server = false;
-    public $sync_data = true;
+    public $sync_data = DB_SYNC_DATA == 1 ? true : false;
+    public $sync_status = DB_SYNC_MODE;
+    public $sync_client = DB_SYNC_MODE == 2 ? true : false;
+    public $sync_server = DB_SYNC_MODE == 1 ? true : false;
     public $sync_status_types = array(
         1 => 'Server',
         2 => 'Client',
@@ -239,7 +239,7 @@ class CriticMatic extends AbstractDB {
             'cm_camp_tags' => 'cm_camp_tags',
             'cm_camp_tag_meta' => 'cm_camp_tag_meta',
             // Meta links
-            'meta_compilation_links'=>'meta_compilation_links',
+            'meta_compilation_links' => 'meta_compilation_links',
         );
         $this->timer_start();
 
@@ -285,11 +285,6 @@ class CriticMatic extends AbstractDB {
             'actors_main_wait' => 30,
             'critics_unique' => 0,
         );
-
-        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
-        $this->sync_status = DB_SYNC_MODE;
-        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
-        $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
 
         if ($this->sync_client) {
             unset($this->author_tabs['edit']);
@@ -534,7 +529,7 @@ class CriticMatic extends AbstractDB {
         }
         return $this->wl;
     }
-    
+
     public function get_ccrowd() {
         if (!$this->ccrowd) {
             if (!class_exists('CriticCrowd')) {
@@ -544,7 +539,6 @@ class CriticMatic extends AbstractDB {
         }
         return $this->ccrowd;
     }
-    
 
     public function get_wpu() {
         if (!$this->wpu) {
@@ -676,9 +670,9 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_fetch_row($sql);
         return $result;
     }
-    
-    public function get_posts_by_ids($ids=array()) {
-        $sql = "SELECT * FROM {$this->db['posts']} WHERE id IN(".implode(',',$ids).")";
+
+    public function get_posts_by_ids($ids = array()) {
+        $sql = "SELECT * FROM {$this->db['posts']} WHERE id IN(" . implode(',', $ids) . ")";
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1044,7 +1038,7 @@ class CriticMatic extends AbstractDB {
       2 => 'Manual'
      */
 
-    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true, $show_in=0) {
+    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true, $show_in = 0) {
         $link_hash = '';
         $link_id = 0;
         if ($link) {
@@ -1077,7 +1071,7 @@ class CriticMatic extends AbstractDB {
             'top_movie' => $top_movie,
             'view_type' => $view_type,
             'link_id' => $link_id,
-            'show_in'=>$show_in,
+            'show_in' => $show_in,
         );
 
         $id = $this->sync_insert_data($data, $this->db['posts']);
@@ -1827,14 +1821,14 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
-    public function remove_author_cache($aid=0, $uid=0) {
-        if ($aid==0){
-            if ($uid>0){
+    public function remove_author_cache($aid = 0, $uid = 0) {
+        if ($aid == 0) {
+            if ($uid > 0) {
                 $author = $this->get_author_by_wp_uid($uid);
                 $aid = $author->id;
             }
         }
-        if ($aid==0){
+        if ($aid == 0) {
             return false;
         }
 
@@ -2432,7 +2426,7 @@ class CriticMatic extends AbstractDB {
                 'show_type' => $show_type,
                 'last_upd' => $curr_time,
             );
-            
+
             $this->remove_author_cache($id);
 
             $this->sync_update_data($data, $id, $this->db['authors']);
@@ -2790,7 +2784,7 @@ class CriticMatic extends AbstractDB {
             'tid' => $tid,
             'cid' => $aid,
         );
-        $this->sync_delete_multi($data, $this->db['tag_meta'],  10);
+        $this->sync_delete_multi($data, $this->db['tag_meta'], 10);
     }
 
     public function remove_author_tags($aid) {
@@ -2801,7 +2795,7 @@ class CriticMatic extends AbstractDB {
                     'tid' => $tag->id,
                     'aid' => $aid,
                 );
-                $this->sync_delete_multi($data, $this->db['tag_meta'],  10);
+                $this->sync_delete_multi($data, $this->db['tag_meta'], 10);
             }
         }
     }
@@ -3047,11 +3041,11 @@ class CriticMatic extends AbstractDB {
         <div class="flex-row">
             <p>Selected tags:</p>
             <ul id="tag-list">
-                <?php
-                $camp_tags = $this->get_camp_tags($campaign_id, $post_type);
-                if ($camp_tags) {
-                    foreach ($camp_tags as $tag) {
-                        ?>
+        <?php
+        $camp_tags = $this->get_camp_tags($campaign_id, $post_type);
+        if ($camp_tags) {
+            foreach ($camp_tags as $tag) {
+                ?>
                         <li><?php print $tag->name ?></li>
                         <?php
                     }
@@ -3064,11 +3058,11 @@ class CriticMatic extends AbstractDB {
         <div class="flex-row">
             <p>Popular tags:</p>
             <ul id="popular-tags">
-                <?php
-                $pop_tags = $this->get_popular_tags();
-                if ($pop_tags) {
-                    foreach ($pop_tags as $pop_id) {
-                        ?>
+        <?php
+        $pop_tags = $this->get_popular_tags();
+        if ($pop_tags) {
+            foreach ($pop_tags as $pop_id) {
+                ?>
                         <li><?php print $all_tags[$pop_id] ?></li>
                         <?php
                     }
@@ -3076,1894 +3070,1895 @@ class CriticMatic extends AbstractDB {
                 ?>
             </ul>
         </div>
-        <?php
-    }
-
-    /*
-     * Thumbs
-     */
-
-    public function get_thumb($cid) {
-        $sql = sprintf("SELECT url FROM {$this->db['thumbs']} WHERE cid=%d", (int) $cid);
-        $result = $this->db_get_var($sql);
-        return $result;
-    }
-
-    public function add_thumb($cid = 0, $url = '') {
-        $data = array(
-            'cid' => $cid,
-            'url' => $url,
-            'date' => $this->curr_time()
-        );
-        $this->db_insert($data, $this->db['thumbs']);
-    }
-
-    /*
-     * Movies get
-     */
-
-    public function get_movies_data($cid = 0, $fid = 0) {
-        $fid_and = '';
-        if ($fid > 0) {
-            $fid_and = sprintf(' AND fid=%d', $fid);
-        }
-        $sql = sprintf("SELECT id, fid, type, state, rating FROM {$this->db['meta']} WHERE cid=%d" . $fid_and, (int) $cid);
-        $result = $this->db_results($sql);
-        return $result;
-    }
-
-    public function get_movie_state_name($id) {
-        $name = $this->movie_state[$id];
-        return $name;
-    }
-
-    public function get_all_movie_meta($pid) {
-        // Deprecated unused
-        $movie_meta = get_post_meta($pid);
-        $ret = array();
-        foreach ($movie_meta as $key => $value) {
-            if (strstr($key, '_wpmoly_movie_')) {
-                $new_key = ucfirst(str_replace('_', ' ', str_replace('_wpmoly_movie_', '', $key)));
-                $ret[$new_key] = $value[0];
-            }
-        }
-        return $ret;
-    }
-
-    public function get_movie_meta($pid) {
-        // Deprecated. Unused
-        $fields = array(
-            'Title' => '_wpmoly_movie_title',
-            'Release date' => '_wpmoly_movie_release_date',
-            'Runtime' => '_wpmoly_movie_runtime',
-            'Director' => '_wpmoly_movie_director',
-            'Cast' => '_wpmoly_movie_cast'
-        );
-
-        //_wpmoly_movie_overview
-
-        $movie_meta = get_post_meta($pid);
-
-        $ret = array();
-        foreach ($fields as $name => $value) {
-            if (isset($movie_meta[$value][0])) {
-                $ret[$name] = $movie_meta[$value][0];
-            } else {
-                $ret[$name] = '';
-            }
-        }
-        return $ret;
-    }
-
-    public function get_critics_meta_by_movie($pid) {
-        $sql = sprintf("SELECT id, cid, type, state, rating "
-                . "FROM {$this->db['meta']} "
-                . "WHERE fid=%d", (int) $pid);
-        $result = $this->db_results($sql);
-        return $result;
-    }
-
-    public function get_critics_meta_weights($fid = 0) {
-        $sql = sprintf("SELECT cid, rating "
-                . "FROM {$this->db['meta']} "
-                . "WHERE fid=%d", $fid);
-        $results = $this->db_results($sql);
-        $ret = array();
-        if ($results) {
-            foreach ($results as $item) {
-                $ret[$item->cid] = $item->rating;
-            }
-            arsort($ret);
-        }
-        return $ret;
-    }
-
-    public function get_top_critics_meta($cid) {
-        // 1. Get meta where state = Approved
-        $sql = sprintf("SELECT * "
-                . "FROM {$this->db['meta']} "
-                . "WHERE cid=%d AND type>0 AND state=1 ORDER BY rating DESC", (int) $cid);
-        $result = $this->db_fetch_row($sql);
-
-        if ($result) {
-            return $result;
-        }
-
-        // 2. Get any state
-        $sql = sprintf("SELECT * "
-                . "FROM {$this->db['meta']} "
-                . "WHERE cid=%d AND type>0 AND state>0 ORDER BY rating DESC", (int) $cid);
-        $result = $this->db_fetch_row($sql);
-
-        if (!$result) {
-            $result = 0;
-        }
-
-        return $result;
-    }
-
-    public function get_critic_meta_state($cid, $fid) {
-        $sql = sprintf("SELECT state, type "
-                . "FROM {$this->db['meta']} "
-                . "WHERE cid=%d AND fid=%d", (int) $cid, (int) $fid);
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    public function get_critics_meta_and_posts_by_movie($pid) {
-        $sql = sprintf("SELECT m.cid, m.type, m.state, m.rating, p.title, p.link, a.name "
-                . "FROM {$this->db['meta']} m "
-                . "INNER JOIN {$this->db['posts']} p ON p.id = m.cid "
-                . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
-                . "INNER JOIN {$this->db['authors']} a ON a.id = am.aid "
-                . "WHERE fid=%d", (int) $pid);
-        $result = $this->db_results($sql);
-        return $result;
-    }
-
-    public function find_top_rating_no_meta($limit, $debug) {
-        // Find critic post that no top_rating
-
-        if ($debug) {
-            $sql = sprintf("SELECT COUNT(p.id) FROM {$this->db['posts']} p "
-                    . "LEFT JOIN {$this->db['meta']} m ON p.id = m.cid "
-                    . "WHERE p.top_movie > 0 AND m.id is NULL ORDER BY p.id DESC LIMIT %d", (int) $limit);
-
-            $count = $this->db_get_var($sql);
-            print "Count: $count\n";
-        }
-
-        $sql = sprintf("SELECT DISTINCT p.id, p.top_movie FROM {$this->db['posts']} p "
-                . "LEFT JOIN {$this->db['meta']} m ON p.id = m.cid "
-                . "WHERE p.top_movie > 0 AND m.id is NULL ORDER BY p.id DESC LIMIT %d", (int) $limit);
-
-        $posts = $this->db_results($sql);
-        if ($debug) {
-            print_r($posts);
-        }
-        if (sizeof($posts)) {
-            foreach ($posts as $post) {
-                $this->update_critic_top_movie($post->id);
-            }
-        }
-    }
-
-    public function find_top_rating_meta($limit, $debug) {
-        // Find critic post that no top_rating
-        $sql = sprintf("SELECT DISTINCT p.id FROM {$this->db['posts']} p "
-                . "INNER JOIN {$this->db['meta']} m ON p.id = m.cid "
-                . "WHERE p.top_movie <= 1 ORDER BY p.id DESC LIMIT %d", (int) $limit);
-
-        $posts = $this->db_results($sql);
-        if (sizeof($posts)) {
-            foreach ($posts as $post) {
-                $this->update_critic_top_movie($post->id);
-            }
-        }
-    }
-
-    public function get_top_movie($cid) {
-        $top_meta = $this->get_top_critics_meta($cid);
-        $top_movie = 0;
-        if ($top_meta) {
-            $top_movie = $top_meta->fid;
-        }
-        return $top_movie;
-    }
-
-    public function get_critic_slug($post) {
-        //TODO refactor
-        $reg = '/[^a-zA-Z0-9\-_ ]+/U';
-        $author_type = $this->get_author_type($post->author_type);
-        $author_name = str_replace(' ', '_', preg_replace($reg, '', $post->author_name));
-        $post_title = str_replace(' ', '_', $this->crop_text(preg_replace($reg, '', $post->title), 50, false));
-        return $post->id . '-' . $author_type . '-' . $author_name . '-' . $post_title;
-    }
-
-    public function get_critic_url($post) {
-        $slug = $this->get_critic_slug($post);
-        $link = '/critics/' . $slug . '/';
-        return $link;
-    }
-
-    /*
-     * Rating get
-     */
-
-    public function get_post_rating($cid) {
-        $sql = sprintf("SELECT * FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
-        $result = $this->db_fetch_row($sql);
-        $ret = $this->get_rating_array($result);
-        return $ret;
-    }
-    
-    public function get_posts_rating($ids=array()) {
-        $sql = "SELECT * FROM {$this->db['rating']} WHERE cid IN(".implode(',',$ids).")";
-        $result = $this->db_results($sql);
-        $ret = array();
-        if ($result){
-            foreach ($result as $item) {
-                $ret[$item->cid] = $this->get_rating_array($item);
-            }            
-        }
-        return $ret;
-    }
-    
-    public function get_post_rating_id($cid) {
-        $sql = sprintf("SELECT id FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
-        $result = $this->db_get_var($sql);
-        return $result;
-    }
-
-    public function get_rating_array($result) {
-        $ret = array();
-        if ($result) {
-            $rating = array();
-            $rating_fields = array(
-                'rating' => 'r',
-                'hollywood' => 'h',
-                'patriotism' => 'p',
-                'misandry' => 'm',
-                'affirmative' => 'a',
-                'lgbtq' => 'l',
-                'god' => 'g',
-                'vote' => 'v',
-                'ip' => 'ip');
-
-            foreach ($result as $key => $value) {
-                if (isset($rating_fields[$key])) {
-                    $rating[$rating_fields[$key]] = $value;
-                }
+                <?php
             }
 
-            foreach ($this->def_rating as $key => $value) {
-                $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
-            }
-        }
-        return $ret;
-    }
-
-    public function get_post_rating_full($cid) {
-        // UNUSED
-        return $this->get_post_rating($cid);
-    }
-
-    public function get_post_rating_def() {
-        return $this->def_rating;
-    }
-
-    public function get_rating_from_postmeta($meta) {
-        $options = array();
-
-        //Add post rating
-        if ($meta['wpcr3_review_rating'][0]) {
-            $options['r'] = trim($meta['wpcr3_review_rating'][0]);
-        }
-        if ($meta['wpcr3_review_rating_hollywood'][0]) {
-            $options['h'] = trim($meta['wpcr3_review_rating_hollywood'][0]);
-        }
-        if ($meta['wpcr3_review_rating_patriotism'][0]) {
-            $options['p'] = trim($meta['wpcr3_review_rating_patriotism'][0]);
-        }
-        if ($meta['wpcr3_review_rating_misandry'][0]) {
-            $options['m'] = trim($meta['wpcr3_review_rating_misandry'][0]);
-        }
-        if ($meta['wpcr3_review_rating_affirmative'][0]) {
-            $options['a'] = trim($meta['wpcr3_review_rating_affirmative'][0]);
-        }
-        if ($meta['wpcr3_review_rating_lgbtq'][0]) {
-            $options['l'] = trim($meta['wpcr3_review_rating_lgbtq'][0]);
-        }
-        if ($meta['wpcr3_review_rating_god'][0]) {
-            $options['g'] = trim($meta['wpcr3_review_rating_god'][0]);
-        }
-        if ($meta['wpcr3_rating_vote'][0]) {
-            $options['v'] = trim($meta['wpcr3_rating_vote'][0]);
-        }
-        // Other fields
-        $ip = $meta['wpcr3_review_ip'][0];
-        if ($ip && $ip != '127.0.0.1') {
-            $options['ip'] = trim($meta['wpcr3_review_ip'][0]);
-        }
-        if ($meta['wpcr3_review_email'][0]) {
-            $options['em'] = trim($meta['wpcr3_review_email'][0]);
-        }
-        if ($meta['wpcr3_review_website'][0]) {
-            $options['we'] = trim($meta['wpcr3_review_website'][0]);
-        }
-        return $options;
-    }
-
-    /*
-     * Rating set
-     */
-
-    public function add_rating($cid = 0, $rating = array(), $force = false) {
-
-        //Check the post already in db
-        $already = $this->get_post_rating($cid);
-        if ($already) {
-            if ($force) {
-                return $this->update_post_rating($cid, $rating);
-            }
-            return '';
-        }
-
-        $ret = array();
-        foreach ($this->def_rating as $key => $value) {
-            $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
-        }
-
-        $options = '';
-
-        $data = array(
-            'cid' => $cid,
-            'rating' => round((float) $ret['r'], 1),
-            'hollywood' => $ret['h'],
-            'patriotism' => $ret['p'],
-            'misandry' => $ret['m'],
-            'affirmative' => $ret['a'],
-            'lgbtq' => $ret['l'],
-            'god' => $ret['g'],
-            'vote' => $ret['v'],
-            'ip' => $ret['ip'],
-            'options' => $options
-        );
-
-        try {
-            $id = $this->sync_insert_data($data, $this->db['rating']);
-        } catch (Exception $exc) {
-            $id = 0;
-        }
-        return $id;
-    }
-
-    public function update_post_rating($cid, $rating) {
-        if ($cid && $rating) {
-
-            $ret = array();
-            foreach ($this->def_rating as $key => $value) {
-                $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
-            }
-
-            $options = '';
-
-            $data = array(
-                'rating' => round((float) $ret['r'], 1),
-                'hollywood' => $ret['h'],
-                'patriotism' => $ret['p'],
-                'misandry' => $ret['m'],
-                'affirmative' => $ret['a'],
-                'lgbtq' => $ret['l'],
-                'god' => $ret['g'],
-                'vote' => $ret['v'],
-                'ip' => $ret['ip'],
-                'options' => $options
-            );
-
-            $rid = $this->get_post_rating_id($cid);
-            $this->sync_update_data($data, $rid, $this->db['rating']);
-
-            return true;
-        }
-        return false;
-    }
-
-    public function transit_post_rating($id, $content, $update_content = true) {
-        $staff_rating = $this->find_staff_rating($content);
-        if ($staff_rating) {
-            // Add rating
-            $add = $this->add_rating($id, $staff_rating, true);
-            if ($update_content) {
-                // Update content
-                $regv = '#\[[^\]]+\]#';
-                $new_content = $content;
-                $new_content = preg_replace($regv, '', $new_content);
-                if ($new_content != $content) {
-                    $this->update_post_content($id, $new_content);
-                }
-            }
-        }
-        if (!$staff_rating) {
-            $staff_rating = $this->find_staff_rating_from_images($content);
-            if ($staff_rating) {
-                $add = $this->add_rating($id, $staff_rating, true);
-                // Update content
-                if ($update_content) {
-                    $regexps = $this->get_rating_regs();
-                    $new_content = $content;
-                    foreach ($regexps as $reg => $key) {
-                        $new_content = preg_replace($reg, '', $new_content);
-                    }
-                    $new_content = preg_replace('/<p>[^<]*<br[^>]*>[^<]*<br[^>]*>.*<\/p>/Us', '', $new_content);
-                    if ($new_content != $content) {
-                        $this->update_post_content($id, $new_content);
-                    }
-                }
-            }
-        }
-        return $staff_rating;
-    }
-
-    public function find_staff_rating($content) {
-        // Get rating code    
-        $meta = array();
-        $regv = '#\[stfu_ratings([^\]]+)\]#';
-        if (preg_match($regv, $content, $mach)) {
-            $content = str_replace($mach[0], '', $content);
-            $array = explode(' ', $mach[1]);
-            foreach ($array as $val) {
-                if ($val) {
-                    $val = explode('=', $val);
-                    $current_type = trim($val[0]);
-                    $current_value = trim(str_replace('"', '', $val[1]));
-                    $curentpercent = 0;
-                    if (strstr($current_value, '.')) {
-                        $current_value_array = explode('.', $current_value);
-                        $current_value = $current_value_array[0];
-                        $curentpercent = 1;
-                    }
-                    if ($current_type == 'worthwhile') {
-                        $current_type = 'wpcr3_review_rating';
-                        $meta[$current_type] = array($current_value);
-                    } else if ($current_type == 'slider') {
-                        $current_type = 'wpcr3_rating_vote';
-                        if ($current_value == 'pay') {
-                            $current_value = 1;
-                        } else if ($current_value == 'free') {
-                            $current_value = 3;
-                        } else if ($current_value == 'skip') {
-                            $current_value = 2;
-                        }
-                        $meta[$current_type] = array($current_value);
-                    } else {
-                        if ($current_value == 0) {
-                            continue;
-                        }
-                        $type = 'wpcr3_review_rating_' . $current_type;
-                        $meta[$type] = array($current_value);
-                    }
-                }
-            }
-            return $this->get_rating_from_postmeta($meta);
-        }
-        return array();
-    }
-
-    public function get_rating_regs() {
-        $rating_regs = array(
-            "/<img[^>]+wp-content\/uploads\/2017\/01\/01_star_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'worthwhile',
-            "/<img[^>]+wp-content\/uploads\/2017\/01\/02_poop_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'hollywood',
-            "/<img[^>]+wp-content\/uploads\/2017\/02\/03_PTRT_(\d)_and_(\d)half_out_of[^>]+>/" => 'patriotism',
-            "/<img[^>]+wp-content\/uploads\/2017\/01\/04_CNT_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'misandry',
-            "/<img[^>]+wp-content\/uploads\/2017\/01\/05_profit_muhammad_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'affirmative',
-            "/<img[^>]+wp-content\/uploads\/2017\/01\/06_queer_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'lgbt',
-            "/<img[^>]+wp-content\/uploads\/2017\/01\/07_cliche_not_brave_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'god',
-            "/<img[^>]+2017\/02\/slider_green_pay_drk\.png[^>]+>/" => 1,
-            "/<img[^>]+2017\/02\/slider_red_skip_drk\.png[^>]+>/" => 2,
-            "/<img[^>]+2017\/01\/slider_orange_free\.png[^>]+>/" => 3,
-            "/<img[^>]+2017\/01\/stfu_ratings_slider_width_3[^>]+>/" => 0,
-        );
-        return $rating_regs;
-    }
-
-    public function find_staff_rating_from_images($content) {
-
-        $rating_array = array();
-
-        $rating_regs = $this->get_rating_regs();
-        foreach ($rating_regs as $reg => $key) {
-            if (preg_match($reg, $content, $match)) {
-                if (is_int($key)) {
-                    if ($key === 0) {
-                        continue;
-                    }
-                    $rating_array['wpcr3_rating_vote'] = array($key);
-                } else if ($key == 'worthwhile') {
-                    $rating_array['wpcr3_review_rating'] = array($match[1]);
-                } else {
-                    $rating_array['wpcr3_review_rating_' . $key] = array($match[1]);
-                }
-            }
-        }
-
-        if ($rating_array) {
-            return $this->get_rating_from_postmeta($rating_array);
-        }
-        return array();
-    }
-
-    public function validate_link_hash($link, $link_hash) {
-        if ($link) {
-            $new_hash = $this->link_hash($link);
-            if ($new_hash == $link_hash) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function update_link_hash($id, $link) {
-        if ($link) {
-            $link_hash = $this->link_hash($link);
-
-            $data = array(
-                'link_hash' => $link_hash,
-            );
-
-            $this->sync_update_data($data, $id, $this->db['posts']);
-
-            return $link_hash;
-        }
-        return '';
-    }
-
-    public function update_post_rating_options() {
-        //One time task
-        $sql = "SELECT id, cid, options FROM {$this->db['rating']} WHERE options !=''";
-        $results = $this->db_results($sql);
-        if ($results) {
             /*
-              [r] => 4
-              [h] => 1
-              [p] => 1
-              [m] => 1
-              [a] => 1
-              [l] => 1
-              [g] => 2
-              [v] => 1
-              [ip] => 50.27.114.245
+             * Thumbs
              */
-            foreach ($results as $result) {
-                if ($result->options) {
-                    $rating = unserialize($result->options);
-                    if ($rating) {
-                        $ret = array();
-                        foreach ($this->def_rating as $key => $value) {
-                            $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
+
+            public function get_thumb($cid) {
+                $sql = sprintf("SELECT url FROM {$this->db['thumbs']} WHERE cid=%d", (int) $cid);
+                $result = $this->db_get_var($sql);
+                return $result;
+            }
+
+            public function add_thumb($cid = 0, $url = '') {
+                $data = array(
+                    'cid' => $cid,
+                    'url' => $url,
+                    'date' => $this->curr_time()
+                );
+                $this->db_insert($data, $this->db['thumbs']);
+            }
+
+            /*
+             * Movies get
+             */
+
+            public function get_movies_data($cid = 0, $fid = 0) {
+                $fid_and = '';
+                if ($fid > 0) {
+                    $fid_and = sprintf(' AND fid=%d', $fid);
+                }
+                $sql = sprintf("SELECT id, fid, type, state, rating FROM {$this->db['meta']} WHERE cid=%d" . $fid_and, (int) $cid);
+                $result = $this->db_results($sql);
+                return $result;
+            }
+
+            public function get_movie_state_name($id) {
+                $name = $this->movie_state[$id];
+                return $name;
+            }
+
+            public function get_all_movie_meta($pid) {
+                // Deprecated unused
+                $movie_meta = get_post_meta($pid);
+                $ret = array();
+                foreach ($movie_meta as $key => $value) {
+                    if (strstr($key, '_wpmoly_movie_')) {
+                        $new_key = ucfirst(str_replace('_', ' ', str_replace('_wpmoly_movie_', '', $key)));
+                        $ret[$new_key] = $value[0];
+                    }
+                }
+                return $ret;
+            }
+
+            public function get_movie_meta($pid) {
+                // Deprecated. Unused
+                $fields = array(
+                    'Title' => '_wpmoly_movie_title',
+                    'Release date' => '_wpmoly_movie_release_date',
+                    'Runtime' => '_wpmoly_movie_runtime',
+                    'Director' => '_wpmoly_movie_director',
+                    'Cast' => '_wpmoly_movie_cast'
+                );
+
+                //_wpmoly_movie_overview
+
+                $movie_meta = get_post_meta($pid);
+
+                $ret = array();
+                foreach ($fields as $name => $value) {
+                    if (isset($movie_meta[$value][0])) {
+                        $ret[$name] = $movie_meta[$value][0];
+                    } else {
+                        $ret[$name] = '';
+                    }
+                }
+                return $ret;
+            }
+
+            public function get_critics_meta_by_movie($pid) {
+                $sql = sprintf("SELECT id, cid, type, state, rating "
+                        . "FROM {$this->db['meta']} "
+                        . "WHERE fid=%d", (int) $pid);
+                $result = $this->db_results($sql);
+                return $result;
+            }
+
+            public function get_critics_meta_weights($fid = 0) {
+                $sql = sprintf("SELECT cid, rating "
+                        . "FROM {$this->db['meta']} "
+                        . "WHERE fid=%d", $fid);
+                $results = $this->db_results($sql);
+                $ret = array();
+                if ($results) {
+                    foreach ($results as $item) {
+                        $ret[$item->cid] = $item->rating;
+                    }
+                    arsort($ret);
+                }
+                return $ret;
+            }
+
+            public function get_top_critics_meta($cid) {
+                // 1. Get meta where state = Approved
+                $sql = sprintf("SELECT * "
+                        . "FROM {$this->db['meta']} "
+                        . "WHERE cid=%d AND type>0 AND state=1 ORDER BY rating DESC", (int) $cid);
+                $result = $this->db_fetch_row($sql);
+
+                if ($result) {
+                    return $result;
+                }
+
+                // 2. Get any state
+                $sql = sprintf("SELECT * "
+                        . "FROM {$this->db['meta']} "
+                        . "WHERE cid=%d AND type>0 AND state>0 ORDER BY rating DESC", (int) $cid);
+                $result = $this->db_fetch_row($sql);
+
+                if (!$result) {
+                    $result = 0;
+                }
+
+                return $result;
+            }
+
+            public function get_critic_meta_state($cid, $fid) {
+                $sql = sprintf("SELECT state, type "
+                        . "FROM {$this->db['meta']} "
+                        . "WHERE cid=%d AND fid=%d", (int) $cid, (int) $fid);
+                $result = $this->db_fetch_row($sql);
+                return $result;
+            }
+
+            public function get_critics_meta_and_posts_by_movie($pid) {
+                $sql = sprintf("SELECT m.cid, m.type, m.state, m.rating, p.title, p.link, a.name "
+                        . "FROM {$this->db['meta']} m "
+                        . "INNER JOIN {$this->db['posts']} p ON p.id = m.cid "
+                        . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
+                        . "INNER JOIN {$this->db['authors']} a ON a.id = am.aid "
+                        . "WHERE fid=%d", (int) $pid);
+                $result = $this->db_results($sql);
+                return $result;
+            }
+
+            public function find_top_rating_no_meta($limit, $debug) {
+                // Find critic post that no top_rating
+
+                if ($debug) {
+                    $sql = sprintf("SELECT COUNT(p.id) FROM {$this->db['posts']} p "
+                            . "LEFT JOIN {$this->db['meta']} m ON p.id = m.cid "
+                            . "WHERE p.top_movie > 0 AND m.id is NULL ORDER BY p.id DESC LIMIT %d", (int) $limit);
+
+                    $count = $this->db_get_var($sql);
+                    print "Count: $count\n";
+                }
+
+                $sql = sprintf("SELECT DISTINCT p.id, p.top_movie FROM {$this->db['posts']} p "
+                        . "LEFT JOIN {$this->db['meta']} m ON p.id = m.cid "
+                        . "WHERE p.top_movie > 0 AND m.id is NULL ORDER BY p.id DESC LIMIT %d", (int) $limit);
+
+                $posts = $this->db_results($sql);
+                if ($debug) {
+                    print_r($posts);
+                }
+                if (sizeof($posts)) {
+                    foreach ($posts as $post) {
+                        $this->update_critic_top_movie($post->id);
+                    }
+                }
+            }
+
+            public function find_top_rating_meta($limit, $debug) {
+                // Find critic post that no top_rating
+                $sql = sprintf("SELECT DISTINCT p.id FROM {$this->db['posts']} p "
+                        . "INNER JOIN {$this->db['meta']} m ON p.id = m.cid "
+                        . "WHERE p.top_movie <= 1 ORDER BY p.id DESC LIMIT %d", (int) $limit);
+
+                $posts = $this->db_results($sql);
+                if (sizeof($posts)) {
+                    foreach ($posts as $post) {
+                        $this->update_critic_top_movie($post->id);
+                    }
+                }
+            }
+
+            public function get_top_movie($cid) {
+                $top_meta = $this->get_top_critics_meta($cid);
+                $top_movie = 0;
+                if ($top_meta) {
+                    $top_movie = $top_meta->fid;
+                }
+                return $top_movie;
+            }
+
+            public function get_critic_slug($post) {
+                //TODO refactor
+                $reg = '/[^a-zA-Z0-9\-_ ]+/U';
+                $author_type = $this->get_author_type($post->author_type);
+                $author_name = str_replace(' ', '_', preg_replace($reg, '', $post->author_name));
+                $post_title = str_replace(' ', '_', $this->crop_text(preg_replace($reg, '', $post->title), 50, false));
+                return $post->id . '-' . $author_type . '-' . $author_name . '-' . $post_title;
+            }
+
+            public function get_critic_url($post) {
+                $slug = $this->get_critic_slug($post);
+                $link = '/critics/' . $slug . '/';
+                return $link;
+            }
+
+            /*
+             * Rating get
+             */
+
+            public function get_post_rating($cid) {
+                $sql = sprintf("SELECT * FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
+                $result = $this->db_fetch_row($sql);
+                $ret = $this->get_rating_array($result);
+                return $ret;
+            }
+
+            public function get_posts_rating($ids = array()) {
+                $sql = "SELECT * FROM {$this->db['rating']} WHERE cid IN(" . implode(',', $ids) . ")";
+                $result = $this->db_results($sql);
+                $ret = array();
+                if ($result) {
+                    foreach ($result as $item) {
+                        $ret[$item->cid] = $this->get_rating_array($item);
+                    }
+                }
+                return $ret;
+            }
+
+            public function get_post_rating_id($cid) {
+                $sql = sprintf("SELECT id FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
+                $result = $this->db_get_var($sql);
+                return $result;
+            }
+
+            public function get_rating_array($result) {
+                $ret = array();
+                if ($result) {
+                    $rating = array();
+                    $rating_fields = array(
+                        'rating' => 'r',
+                        'hollywood' => 'h',
+                        'patriotism' => 'p',
+                        'misandry' => 'm',
+                        'affirmative' => 'a',
+                        'lgbtq' => 'l',
+                        'god' => 'g',
+                        'vote' => 'v',
+                        'ip' => 'ip');
+
+                    foreach ($result as $key => $value) {
+                        if (isset($rating_fields[$key])) {
+                            $rating[$rating_fields[$key]] = $value;
                         }
+                    }
 
-                        $options = '';
-                        $data = array(
-                            'rating' => $ret['r'],
-                            'hollywood' => $ret['h'],
-                            'patriotism' => $ret['p'],
-                            'misandry' => $ret['m'],
-                            'affirmative' => $ret['a'],
-                            'lgbtq' => $ret['l'],
-                            'god' => $ret['g'],
-                            'vote' => $ret['v'],
-                            'ip' => $ret['ip'],
-                            'options' => $options
-                        );
-                        $id = $result->id;
-                        $this->sync_update_data($data, $id, $this->db['rating']);
+                    foreach ($this->def_rating as $key => $value) {
+                        $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
                     }
                 }
+                return $ret;
             }
-            print 'Done';
-        }
-    }
 
-    /*
-     * Crowdsource IP
-     */
+            public function get_post_rating_full($cid) {
+                // UNUSED
+                return $this->get_post_rating($cid);
+            }
 
-    public function bulk_change_ip_list_type_crowd($ids, $status = '', $table = '') {
+            public function get_post_rating_def() {
+                return $this->def_rating;
+            }
 
-        if ($ids && sizeof($ids)) {
-            foreach ($ids as $cid) {
+            public function get_rating_from_postmeta($meta) {
+                $options = array();
 
-                $sql = sprintf("SELECT `ip` FROM `data_{$table}` WHERE id = %d", (int) $cid);
-
-                $ip = $this->db_get_var($sql);
-
-                if ($ip) {
-
-                    //IP exist. Change status
-                    $type = 0;
-                    if ($status == 'wl') {
-                        $type = 1;
-                    }if ($status == 'gl') {
-                        $type = 2;
-                    }if ($status == 'bl') {
-                        $type = 3;
-                    }
-
-                    if ($type == 0) {
-                        //remove ip
-                        $this->remove_ip_from_list($ip);
-                    } else {
-                        //Change status
-                        $this->change_ip_type($ip, $type);
-                    }
+                //Add post rating
+                if ($meta['wpcr3_review_rating'][0]) {
+                    $options['r'] = trim($meta['wpcr3_review_rating'][0]);
                 }
-            }
-        }
-    }
-
-    /*
-     * Audience IP
-     */
-
-    public function bulk_change_ip_list_type($ids, $status = '') {
-
-        if ($ids && sizeof($ids)) {
-            foreach ($ids as $cid) {
-                $rating = $this->get_post_rating($cid);
-                if ($rating['ip']) {
-                    $ip = $rating['ip'];
-                    //IP exist. Change status
-                    $type = 0;
-                    if ($status == 'wl') {
-                        $type = 1;
-                    }if ($status == 'gl') {
-                        $type = 2;
-                    }if ($status == 'bl') {
-                        $type = 3;
-                    }
-
-                    if ($type == 0) {
-                        //remove ip
-                        $this->remove_ip_from_list($ip);
-                    } else {
-                        //Change status
-                        $this->change_ip_type($ip, $type);
-                    }
+                if ($meta['wpcr3_review_rating_hollywood'][0]) {
+                    $options['h'] = trim($meta['wpcr3_review_rating_hollywood'][0]);
                 }
+                if ($meta['wpcr3_review_rating_patriotism'][0]) {
+                    $options['p'] = trim($meta['wpcr3_review_rating_patriotism'][0]);
+                }
+                if ($meta['wpcr3_review_rating_misandry'][0]) {
+                    $options['m'] = trim($meta['wpcr3_review_rating_misandry'][0]);
+                }
+                if ($meta['wpcr3_review_rating_affirmative'][0]) {
+                    $options['a'] = trim($meta['wpcr3_review_rating_affirmative'][0]);
+                }
+                if ($meta['wpcr3_review_rating_lgbtq'][0]) {
+                    $options['l'] = trim($meta['wpcr3_review_rating_lgbtq'][0]);
+                }
+                if ($meta['wpcr3_review_rating_god'][0]) {
+                    $options['g'] = trim($meta['wpcr3_review_rating_god'][0]);
+                }
+                if ($meta['wpcr3_rating_vote'][0]) {
+                    $options['v'] = trim($meta['wpcr3_rating_vote'][0]);
+                }
+                // Other fields
+                $ip = $meta['wpcr3_review_ip'][0];
+                if ($ip && $ip != '127.0.0.1') {
+                    $options['ip'] = trim($meta['wpcr3_review_ip'][0]);
+                }
+                if ($meta['wpcr3_review_email'][0]) {
+                    $options['em'] = trim($meta['wpcr3_review_email'][0]);
+                }
+                if ($meta['wpcr3_review_website'][0]) {
+                    $options['we'] = trim($meta['wpcr3_review_website'][0]);
+                }
+                return $options;
             }
-        }
-    }
 
-    public function bulk_change_ip_list_type_by_ips($ips, $status = '') {
+            /*
+             * Rating set
+             */
 
-        if ($ips && sizeof($ips)) {
-            foreach ($ips as $id) {
-                $type = 0;
-                if ($status == 'wl') {
-                    $type = 1;
-                }if ($status == 'gl') {
-                    $type = 2;
-                }if ($status == 'bl') {
-                    $type = 3;
+            public function add_rating($cid = 0, $rating = array(), $force = false) {
+
+                //Check the post already in db
+                $already = $this->get_post_rating($cid);
+                if ($already) {
+                    if ($force) {
+                        return $this->update_post_rating($cid, $rating);
+                    }
+                    return '';
                 }
 
-                $ip_item = $this->get_ip_by_id($id);
-                if ($ip_item) {
-                    $ip = $ip_item->ip;
-                    if ($type == 0) {
-                        //remove ip
-                        $this->remove_ip_from_list($ip);
-                    } else {
-                        //Change status
-                        $this->change_ip_type($ip, $type);
+                $ret = array();
+                foreach ($this->def_rating as $key => $value) {
+                    $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
+                }
+
+                $options = '';
+
+                $data = array(
+                    'cid' => $cid,
+                    'rating' => round((float) $ret['r'], 1),
+                    'hollywood' => $ret['h'],
+                    'patriotism' => $ret['p'],
+                    'misandry' => $ret['m'],
+                    'affirmative' => $ret['a'],
+                    'lgbtq' => $ret['l'],
+                    'god' => $ret['g'],
+                    'vote' => $ret['v'],
+                    'ip' => $ret['ip'],
+                    'options' => $options
+                );
+
+                try {
+                    $id = $this->sync_insert_data($data, $this->db['rating']);
+                } catch (Exception $exc) {
+                    $id = 0;
+                }
+                return $id;
+            }
+
+            public function update_post_rating($cid, $rating) {
+                if ($cid && $rating) {
+
+                    $ret = array();
+                    foreach ($this->def_rating as $key => $value) {
+                        $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
+                    }
+
+                    $options = '';
+
+                    $data = array(
+                        'rating' => round((float) $ret['r'], 1),
+                        'hollywood' => $ret['h'],
+                        'patriotism' => $ret['p'],
+                        'misandry' => $ret['m'],
+                        'affirmative' => $ret['a'],
+                        'lgbtq' => $ret['l'],
+                        'god' => $ret['g'],
+                        'vote' => $ret['v'],
+                        'ip' => $ret['ip'],
+                        'options' => $options
+                    );
+
+                    $rid = $this->get_post_rating_id($cid);
+                    $this->sync_update_data($data, $rid, $this->db['rating']);
+
+                    return true;
+                }
+                return false;
+            }
+
+            public function transit_post_rating($id, $content, $update_content = true) {
+                $staff_rating = $this->find_staff_rating($content);
+                if ($staff_rating) {
+                    // Add rating
+                    $add = $this->add_rating($id, $staff_rating, true);
+                    if ($update_content) {
+                        // Update content
+                        $regv = '#\[[^\]]+\]#';
+                        $new_content = $content;
+                        $new_content = preg_replace($regv, '', $new_content);
+                        if ($new_content != $content) {
+                            $this->update_post_content($id, $new_content);
+                        }
                     }
                 }
+                if (!$staff_rating) {
+                    $staff_rating = $this->find_staff_rating_from_images($content);
+                    if ($staff_rating) {
+                        $add = $this->add_rating($id, $staff_rating, true);
+                        // Update content
+                        if ($update_content) {
+                            $regexps = $this->get_rating_regs();
+                            $new_content = $content;
+                            foreach ($regexps as $reg => $key) {
+                                $new_content = preg_replace($reg, '', $new_content);
+                            }
+                            $new_content = preg_replace('/<p>[^<]*<br[^>]*>[^<]*<br[^>]*>.*<\/p>/Us', '', $new_content);
+                            if ($new_content != $content) {
+                                $this->update_post_content($id, $new_content);
+                            }
+                        }
+                    }
+                }
+                return $staff_rating;
             }
-        }
-    }
 
-    public function change_ip_type($ip, $type) {
-        $changed = false;
-        //Get IP
-        $ip_exist = $this->get_ip($ip);
-        if ($ip_exist) {
-            //Update IP
-            if ($type != $ip_exist->type) {
-                $this->update_ip_type_by_id($ip_exist->id, $type);
-                $changed = true;
+            public function find_staff_rating($content) {
+                // Get rating code    
+                $meta = array();
+                $regv = '#\[stfu_ratings([^\]]+)\]#';
+                if (preg_match($regv, $content, $mach)) {
+                    $content = str_replace($mach[0], '', $content);
+                    $array = explode(' ', $mach[1]);
+                    foreach ($array as $val) {
+                        if ($val) {
+                            $val = explode('=', $val);
+                            $current_type = trim($val[0]);
+                            $current_value = trim(str_replace('"', '', $val[1]));
+                            $curentpercent = 0;
+                            if (strstr($current_value, '.')) {
+                                $current_value_array = explode('.', $current_value);
+                                $current_value = $current_value_array[0];
+                                $curentpercent = 1;
+                            }
+                            if ($current_type == 'worthwhile') {
+                                $current_type = 'wpcr3_review_rating';
+                                $meta[$current_type] = array($current_value);
+                            } else if ($current_type == 'slider') {
+                                $current_type = 'wpcr3_rating_vote';
+                                if ($current_value == 'pay') {
+                                    $current_value = 1;
+                                } else if ($current_value == 'free') {
+                                    $current_value = 3;
+                                } else if ($current_value == 'skip') {
+                                    $current_value = 2;
+                                }
+                                $meta[$current_type] = array($current_value);
+                            } else {
+                                if ($current_value == 0) {
+                                    continue;
+                                }
+                                $type = 'wpcr3_review_rating_' . $current_type;
+                                $meta[$type] = array($current_value);
+                            }
+                        }
+                    }
+                    return $this->get_rating_from_postmeta($meta);
+                }
+                return array();
             }
-        } else {
-            //Add IP
-            $this->add_ip($ip, $type);
-            $changed = true;
-        }
-    }
 
-    public function get_ip_by_id($id) {
-        $sql = sprintf("SELECT id,type,ip FROM {$this->db['ip']} WHERE id = %d", (int) $id);
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    public function get_ip($ip) {
-        $sql = sprintf("SELECT id,type,ip FROM {$this->db['ip']} WHERE ip = '%s'", $this->escape($ip));
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    public function add_ip($ip, $type) {
-        $sql = sprintf("INSERT INTO {$this->db['ip']} (type, ip) VALUES ('%d', '%s')", (int) $type, $ip);
-        $this->db_query($sql);
-    }
-
-    public function get_or_create_ip($ip = '', $type = 0) {
-        if (!$ip) {
-            return 0;
-        }
-        $ip_data = $this->get_ip($ip);
-        if ($ip_data) {
-            return $ip_data;
-        }
-
-        $this->add_ip($ip, $type);
-        $id = $this->getInsertId('id', $this->db['ip']);
-        $ip_data = $this->get_ip($ip);
-        return $ip_data;
-    }
-
-    public function update_ip_type_by_id($id, $type = 0) {
-        $sql = sprintf("UPDATE {$this->db['ip']} SET type=%d WHERE id=%d", (int) $type, (int) $id);
-        $this->db_query($sql);
-    }
-
-    public function remove_ip_from_list($ip) {
-        $sql = sprintf("DELETE FROM {$this->db['ip']} WHERE ip='%s'", $this->escape($ip));
-        $this->db_query($sql);
-    }
-
-    public function get_ips($status, $page, $orderby, $order) {
-        $page -= 1;
-        $start = $page * $this->perpage;
-
-        //Type
-        $status_query = '';
-        if ($status != -1) {
-            $status_query = " WHERE type = " . (int) $status;
-        }
-
-        //Sort
-        $and_orderby = '';
-        if ($orderby && in_array($orderby, $this->sort_pages)) {
-            $and_orderby = ' ORDER BY ' . $orderby;
-            if ($order) {
-                $and_orderby .= ' ' . $order;
+            public function get_rating_regs() {
+                $rating_regs = array(
+                    "/<img[^>]+wp-content\/uploads\/2017\/01\/01_star_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'worthwhile',
+                    "/<img[^>]+wp-content\/uploads\/2017\/01\/02_poop_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'hollywood',
+                    "/<img[^>]+wp-content\/uploads\/2017\/02\/03_PTRT_(\d)_and_(\d)half_out_of[^>]+>/" => 'patriotism',
+                    "/<img[^>]+wp-content\/uploads\/2017\/01\/04_CNT_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'misandry',
+                    "/<img[^>]+wp-content\/uploads\/2017\/01\/05_profit_muhammad_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'affirmative',
+                    "/<img[^>]+wp-content\/uploads\/2017\/01\/06_queer_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'lgbt',
+                    "/<img[^>]+wp-content\/uploads\/2017\/01\/07_cliche_not_brave_(\d)_and_(\d)half_out_of_5[^>]+>/" => 'god',
+                    "/<img[^>]+2017\/02\/slider_green_pay_drk\.png[^>]+>/" => 1,
+                    "/<img[^>]+2017\/02\/slider_red_skip_drk\.png[^>]+>/" => 2,
+                    "/<img[^>]+2017\/01\/slider_orange_free\.png[^>]+>/" => 3,
+                    "/<img[^>]+2017\/01\/stfu_ratings_slider_width_3[^>]+>/" => 0,
+                );
+                return $rating_regs;
             }
-        } else {
-            $and_orderby = " ORDER BY id DESC";
-        }
 
-        $limit = '';
-        if ($this->perpage > 0) {
-            $limit = " LIMIT $start, " . $this->perpage;
-        }
+            public function find_staff_rating_from_images($content) {
 
-        $sql = "SELECT id, type, ip FROM {$this->db['ip']}" . $status_query . $and_orderby . $limit;
+                $rating_array = array();
 
-        $result = $this->db_results($sql);
+                $rating_regs = $this->get_rating_regs();
+                foreach ($rating_regs as $reg => $key) {
+                    if (preg_match($reg, $content, $match)) {
+                        if (is_int($key)) {
+                            if ($key === 0) {
+                                continue;
+                            }
+                            $rating_array['wpcr3_rating_vote'] = array($key);
+                        } else if ($key == 'worthwhile') {
+                            $rating_array['wpcr3_review_rating'] = array($match[1]);
+                        } else {
+                            $rating_array['wpcr3_review_rating_' . $key] = array($match[1]);
+                        }
+                    }
+                }
 
-        return $result;
-    }
+                if ($rating_array) {
+                    return $this->get_rating_from_postmeta($rating_array);
+                }
+                return array();
+            }
 
-    public function get_ip_count($status = -1) {
-        // Custom status
+            public function validate_link_hash($link, $link_hash) {
+                if ($link) {
+                    $new_hash = $this->link_hash($link);
+                    if ($new_hash == $link_hash) {
+                        return true;
+                    }
+                }
+                return false;
+            }
 
-        $status_query = '';
-        if ($status != -1) {
-            $status_query = " WHERE type = " . (int) $status;
-        }
+            public function update_link_hash($id, $link) {
+                if ($link) {
+                    $link_hash = $this->link_hash($link);
 
-        $query = "SELECT COUNT(id) FROM {$this->db['ip']}" . $status_query;
+                    $data = array(
+                        'link_hash' => $link_hash,
+                    );
 
-        $result = $this->db_get_var($query);
-        return $result;
-    }
+                    $this->sync_update_data($data, $id, $this->db['posts']);
 
-    public function get_ip_states() {
-        $count = $this->get_ip_count();
-        $states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->ip_status as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_ip_count($key));
-        }
-        return $states;
-    }
+                    return $link_hash;
+                }
+                return '';
+            }
 
-    /*
-     * Email
-     */
-
-    public function add_email($email, $type) {
-        $sql = sprintf("INSERT INTO {$this->db['email']} (type, email) VALUES ('%d', '%s')", (int) $type, $email);
-        $this->db_query($sql);
-    }
-
-    public function get_or_create_email($email = '', $type = 0) {
-        if (!$email) {
-            return 0;
-        }
-        $email_data = $this->get_email($email);
-        if ($email_data) {
-            return $email_data;
-        }
-
-        $this->add_email($email, $type);
-        $id = $this->getInsertId('id', $this->db['email']);
-        $email_data = $this->get_email($email);
-        return $email_data;
-    }
-
-    public function get_email_by_id($id) {
-        $sql = sprintf("SELECT id,type,email FROM {$this->db['email']} WHERE id = %d", (int) $id);
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    public function get_email($email) {
-        $sql = sprintf("SELECT id,type,email FROM {$this->db['email']} WHERE email = '%s'", $this->escape($email));
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    /* Review crowd */
-
-    public function submit_review_crowd($data) {
-        /*
-         * stdClass Object ( [
-         * id] => 2 
-         * [review_id] => 36799 
-         * [broken_link] => 0 
-         * [source_link] => 
-         * [incorrect_item] => 1 
-         * [movies] => {"43234":"remove","11733":"mention"} 
-         * [irrelevant] => 0 
-         * [remove] => 0 
-         * [blur] => 0 
-         * [comment] => 
-         * [user] => 254 
-         * [ip] => 188.234.245.4 
-         * [add_time] => 1638608052 
-         * [status] => 1 )
-         */
-
-        $cid = $data->review_id;
-
-        //Remove item
-        if ($data->remove) {
-            // Set trash status
-            $this->trash_post_by_id($cid);
-            return true;
-        }
-
-        $ret = false;
-
-        // Update meta
-        if ($data->incorrect_item && $data->movies) {
-            $meta_arr = json_decode($data->movies);
-            if ($meta_arr && sizeof($meta_arr)) {
-                foreach ($meta_arr as $fid => $action) {
-                    $sql = sprintf("SELECT * FROM {$this->db['meta']} WHERE cid=%d AND fid=%d", (int) $cid, (int) $fid);
-                    $meta_exist = $this->db_fetch_row($sql);
-
+            public function update_post_rating_options() {
+                //One time task
+                $sql = "SELECT id, cid, options FROM {$this->db['rating']} WHERE options !=''";
+                $results = $this->db_results($sql);
+                if ($results) {
                     /*
-                      State:
-                      1 => 'Approved',
-                      2 => 'Auto',
-                      0 => 'Unapproved'
+                      [r] => 4
+                      [h] => 1
+                      [p] => 1
+                      [m] => 1
+                      [a] => 1
+                      [l] => 1
+                      [g] => 2
+                      [v] => 1
+                      [ip] => 50.27.114.245
                      */
-                    $state = 1;
-                    /*
-                     * Type:
-                      0 => 'None',
-                      1 => 'Proper Review',
-                      2 => 'Contains Mention',
-                      3 => 'Related Article'
-                     */
-                    $type = 0;
+                    foreach ($results as $result) {
+                        if ($result->options) {
+                            $rating = unserialize($result->options);
+                            if ($rating) {
+                                $ret = array();
+                                foreach ($this->def_rating as $key => $value) {
+                                    $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
+                                }
 
-                    if ($meta_exist) {
-                        $state = $meta_exist->state;
-                        $type = $meta_exist->type;
+                                $options = '';
+                                $data = array(
+                                    'rating' => $ret['r'],
+                                    'hollywood' => $ret['h'],
+                                    'patriotism' => $ret['p'],
+                                    'misandry' => $ret['m'],
+                                    'affirmative' => $ret['a'],
+                                    'lgbtq' => $ret['l'],
+                                    'god' => $ret['g'],
+                                    'vote' => $ret['v'],
+                                    'ip' => $ret['ip'],
+                                    'options' => $options
+                                );
+                                $id = $result->id;
+                                $this->sync_update_data($data, $id, $this->db['rating']);
+                            }
+                        }
                     }
-                    if ($action == 'remove') {
-                        //Remove meta
-                        $state = 0;
+                    print 'Done';
+                }
+            }
+
+            /*
+             * Crowdsource IP
+             */
+
+            public function bulk_change_ip_list_type_crowd($ids, $status = '', $table = '') {
+
+                if ($ids && sizeof($ids)) {
+                    foreach ($ids as $cid) {
+
+                        $sql = sprintf("SELECT `ip` FROM `data_{$table}` WHERE id = %d", (int) $cid);
+
+                        $ip = $this->db_get_var($sql);
+
+                        if ($ip) {
+
+                            //IP exist. Change status
+                            $type = 0;
+                            if ($status == 'wl') {
+                                $type = 1;
+                            }if ($status == 'gl') {
+                                $type = 2;
+                            }if ($status == 'bl') {
+                                $type = 3;
+                            }
+
+                            if ($type == 0) {
+                                //remove ip
+                                $this->remove_ip_from_list($ip);
+                            } else {
+                                //Change status
+                                $this->change_ip_type($ip, $type);
+                            }
+                        }
+                    }
+                }
+            }
+
+            /*
+             * Audience IP
+             */
+
+            public function bulk_change_ip_list_type($ids, $status = '') {
+
+                if ($ids && sizeof($ids)) {
+                    foreach ($ids as $cid) {
+                        $rating = $this->get_post_rating($cid);
+                        if ($rating['ip']) {
+                            $ip = $rating['ip'];
+                            //IP exist. Change status
+                            $type = 0;
+                            if ($status == 'wl') {
+                                $type = 1;
+                            }if ($status == 'gl') {
+                                $type = 2;
+                            }if ($status == 'bl') {
+                                $type = 3;
+                            }
+
+                            if ($type == 0) {
+                                //remove ip
+                                $this->remove_ip_from_list($ip);
+                            } else {
+                                //Change status
+                                $this->change_ip_type($ip, $type);
+                            }
+                        }
+                    }
+                }
+            }
+
+            public function bulk_change_ip_list_type_by_ips($ips, $status = '') {
+
+                if ($ips && sizeof($ips)) {
+                    foreach ($ips as $id) {
                         $type = 0;
-                    } else {
-                        $state = 1;
-                        if ($action == 'proper') {
+                        if ($status == 'wl') {
                             $type = 1;
-                        } else if ($action == 'mention') {
+                        }if ($status == 'gl') {
                             $type = 2;
-                        } else if ($action == 'related') {
+                        }if ($status == 'bl') {
                             $type = 3;
                         }
-                    }
 
-                    if ($meta_exist) {
-                        //Update meta
-                        if ($state != $meta_exist->state || $type != $meta_exist->type) {
-                            $this->update_post_meta($fid, $type, $state, $cid, $meta_exist->rating);
-                            //Update post cache
-                            $this->update_post_date_add($cid);
-                            $ret = true;
+                        $ip_item = $this->get_ip_by_id($id);
+                        if ($ip_item) {
+                            $ip = $ip_item->ip;
+                            if ($type == 0) {
+                                //remove ip
+                                $this->remove_ip_from_list($ip);
+                            } else {
+                                //Change status
+                                $this->change_ip_type($ip, $type);
+                            }
                         }
-                    } else {
-                        //Add meta
-                        $this->add_post_meta($fid, $type, $state, $cid);
+                    }
+                }
+            }
+
+            public function change_ip_type($ip, $type) {
+                $changed = false;
+                //Get IP
+                $ip_exist = $this->get_ip($ip);
+                if ($ip_exist) {
+                    //Update IP
+                    if ($type != $ip_exist->type) {
+                        $this->update_ip_type_by_id($ip_exist->id, $type);
+                        $changed = true;
+                    }
+                } else {
+                    //Add IP
+                    $this->add_ip($ip, $type);
+                    $changed = true;
+                }
+            }
+
+            public function get_ip_by_id($id) {
+                $sql = sprintf("SELECT id,type,ip FROM {$this->db['ip']} WHERE id = %d", (int) $id);
+                $result = $this->db_fetch_row($sql);
+                return $result;
+            }
+
+            public function get_ip($ip) {
+                $sql = sprintf("SELECT id,type,ip FROM {$this->db['ip']} WHERE ip = '%s'", $this->escape($ip));
+                $result = $this->db_fetch_row($sql);
+                return $result;
+            }
+
+            public function add_ip($ip, $type) {
+                $sql = sprintf("INSERT INTO {$this->db['ip']} (type, ip) VALUES ('%d', '%s')", (int) $type, $ip);
+                $this->db_query($sql);
+            }
+
+            public function get_or_create_ip($ip = '', $type = 0) {
+                if (!$ip) {
+                    return 0;
+                }
+                $ip_data = $this->get_ip($ip);
+                if ($ip_data) {
+                    return $ip_data;
+                }
+
+                $this->add_ip($ip, $type);
+                $id = $this->getInsertId('id', $this->db['ip']);
+                $ip_data = $this->get_ip($ip);
+                return $ip_data;
+            }
+
+            public function update_ip_type_by_id($id, $type = 0) {
+                $sql = sprintf("UPDATE {$this->db['ip']} SET type=%d WHERE id=%d", (int) $type, (int) $id);
+                $this->db_query($sql);
+            }
+
+            public function remove_ip_from_list($ip) {
+                $sql = sprintf("DELETE FROM {$this->db['ip']} WHERE ip='%s'", $this->escape($ip));
+                $this->db_query($sql);
+            }
+
+            public function get_ips($status, $page, $orderby, $order) {
+                $page -= 1;
+                $start = $page * $this->perpage;
+
+                //Type
+                $status_query = '';
+                if ($status != -1) {
+                    $status_query = " WHERE type = " . (int) $status;
+                }
+
+                //Sort
+                $and_orderby = '';
+                if ($orderby && in_array($orderby, $this->sort_pages)) {
+                    $and_orderby = ' ORDER BY ' . $orderby;
+                    if ($order) {
+                        $and_orderby .= ' ' . $order;
+                    }
+                } else {
+                    $and_orderby = " ORDER BY id DESC";
+                }
+
+                $limit = '';
+                if ($this->perpage > 0) {
+                    $limit = " LIMIT $start, " . $this->perpage;
+                }
+
+                $sql = "SELECT id, type, ip FROM {$this->db['ip']}" . $status_query . $and_orderby . $limit;
+
+                $result = $this->db_results($sql);
+
+                return $result;
+            }
+
+            public function get_ip_count($status = -1) {
+                // Custom status
+
+                $status_query = '';
+                if ($status != -1) {
+                    $status_query = " WHERE type = " . (int) $status;
+                }
+
+                $query = "SELECT COUNT(id) FROM {$this->db['ip']}" . $status_query;
+
+                $result = $this->db_get_var($query);
+                return $result;
+            }
+
+            public function get_ip_states() {
+                $count = $this->get_ip_count();
+                $states = array(
+                    '-1' => array(
+                        'title' => 'All',
+                        'count' => $count
+                    )
+                );
+                foreach ($this->ip_status as $key => $value) {
+                    $states[$key] = array(
+                        'title' => $value,
+                        'count' => $this->get_ip_count($key));
+                }
+                return $states;
+            }
+
+            /*
+             * Email
+             */
+
+            public function add_email($email, $type) {
+                $sql = sprintf("INSERT INTO {$this->db['email']} (type, email) VALUES ('%d', '%s')", (int) $type, $email);
+                $this->db_query($sql);
+            }
+
+            public function get_or_create_email($email = '', $type = 0) {
+                if (!$email) {
+                    return 0;
+                }
+                $email_data = $this->get_email($email);
+                if ($email_data) {
+                    return $email_data;
+                }
+
+                $this->add_email($email, $type);
+                $id = $this->getInsertId('id', $this->db['email']);
+                $email_data = $this->get_email($email);
+                return $email_data;
+            }
+
+            public function get_email_by_id($id) {
+                $sql = sprintf("SELECT id,type,email FROM {$this->db['email']} WHERE id = %d", (int) $id);
+                $result = $this->db_fetch_row($sql);
+                return $result;
+            }
+
+            public function get_email($email) {
+                $sql = sprintf("SELECT id,type,email FROM {$this->db['email']} WHERE email = '%s'", $this->escape($email));
+                $result = $this->db_fetch_row($sql);
+                return $result;
+            }
+
+            /* Review crowd */
+
+            public function submit_review_crowd($data) {
+                /*
+                 * stdClass Object ( [
+                 * id] => 2 
+                 * [review_id] => 36799 
+                 * [broken_link] => 0 
+                 * [source_link] => 
+                 * [incorrect_item] => 1 
+                 * [movies] => {"43234":"remove","11733":"mention"} 
+                 * [irrelevant] => 0 
+                 * [remove] => 0 
+                 * [blur] => 0 
+                 * [comment] => 
+                 * [user] => 254 
+                 * [ip] => 188.234.245.4 
+                 * [add_time] => 1638608052 
+                 * [status] => 1 )
+                 */
+
+                $cid = $data->review_id;
+
+                //Remove item
+                if ($data->remove) {
+                    // Set trash status
+                    $this->trash_post_by_id($cid);
+                    return true;
+                }
+
+                $ret = false;
+
+                // Update meta
+                if ($data->incorrect_item && $data->movies) {
+                    $meta_arr = json_decode($data->movies);
+                    if ($meta_arr && sizeof($meta_arr)) {
+                        foreach ($meta_arr as $fid => $action) {
+                            $sql = sprintf("SELECT * FROM {$this->db['meta']} WHERE cid=%d AND fid=%d", (int) $cid, (int) $fid);
+                            $meta_exist = $this->db_fetch_row($sql);
+
+                            /*
+                              State:
+                              1 => 'Approved',
+                              2 => 'Auto',
+                              0 => 'Unapproved'
+                             */
+                            $state = 1;
+                            /*
+                             * Type:
+                              0 => 'None',
+                              1 => 'Proper Review',
+                              2 => 'Contains Mention',
+                              3 => 'Related Article'
+                             */
+                            $type = 0;
+
+                            if ($meta_exist) {
+                                $state = $meta_exist->state;
+                                $type = $meta_exist->type;
+                            }
+                            if ($action == 'remove') {
+                                //Remove meta
+                                $state = 0;
+                                $type = 0;
+                            } else {
+                                $state = 1;
+                                if ($action == 'proper') {
+                                    $type = 1;
+                                } else if ($action == 'mention') {
+                                    $type = 2;
+                                } else if ($action == 'related') {
+                                    $type = 3;
+                                }
+                            }
+
+                            if ($meta_exist) {
+                                //Update meta
+                                if ($state != $meta_exist->state || $type != $meta_exist->type) {
+                                    $this->update_post_meta($fid, $type, $state, $cid, $meta_exist->rating);
+                                    //Update post cache
+                                    $this->update_post_date_add($cid);
+                                    $ret = true;
+                                }
+                            } else {
+                                //Add meta
+                                $this->add_post_meta($fid, $type, $state, $cid);
+                                $ret = true;
+                            }
+                        }
+                    }
+                }
+
+                $post = '';
+
+                //Broken link
+                if ($data->broken_link && $data->source_link) {
+                    // Update post link
+                    $post = $this->get_post($cid);
+                    if ($post) {
+                        $link = $data->source_link;
+                        $this->update_post($cid, $post->date, $post->status, $link, $post->title, $post->content, $post->type);
                         $ret = true;
                     }
                 }
-            }
-        }
 
-        $post = '';
-
-        //Broken link
-        if ($data->broken_link && $data->source_link) {
-            // Update post link
-            $post = $this->get_post($cid);
-            if ($post) {
-                $link = $data->source_link;
-                $this->update_post($cid, $post->date, $post->status, $link, $post->title, $post->content, $post->type);
-                $ret = true;
-            }
-        }
-
-        //Blur the content
-        if ($data->blur) {
-            if (!$post) {
-                $post = $this->get_post($cid);
-            }
-            if ($post) {
-                if (!$post->blur) {
-                    $post_blur = 1;
-                    $this->update_post($cid, $post->date, $post->status, $post->link, $post->title, $post->content, $post->type, $post_blur);
-                    $ret = true;
-                }
-            }
-        }
-
-        return $ret;
-    }
-
-    /*
-     * Settings
-     */
-
-    public function get_settings($cache = true) {
-        if ($cache && $this->settings) {
-            return $this->settings;
-        }
-        // Get settings from options
-        $settings = unserialize($this->get_option('critic_matic_settings', '', false));
-
-        if ($settings && sizeof($settings)) {
-            foreach ($this->settings_def as $key => $value) {
-                if (!isset($settings[$key])) {
-                    //replace empty settings to default
-                    $settings[$key] = $value;
-                } else {
-                    if ($key == 'audience_desc') {
-                        $audience_desc = $settings[$key];
-                        $au_decode = array();
-                        foreach ($audience_desc as $k => $v) {
-                            $au_decode[$k] = base64_decode($v);
+                //Blur the content
+                if ($data->blur) {
+                    if (!$post) {
+                        $post = $this->get_post($cid);
+                    }
+                    if ($post) {
+                        if (!$post->blur) {
+                            $post_blur = 1;
+                            $this->update_post($cid, $post->date, $post->status, $post->link, $post->title, $post->content, $post->type, $post_blur);
+                            $ret = true;
                         }
-                        $settings[$key] = $au_decode;
-                    } else if ($key == 'games_tags') {
-                        $settings[$key] = base64_decode($settings[$key]);
-                    } else if ($key == 'actors_star_ss' || $key == 'actors_main_ss') {
-                        $settings[$key] = base64_decode($settings[$key]);
                     }
                 }
+
+                return $ret;
             }
-        } else {
-            $settings = $this->settings_def;
-        }
-        $this->settings = $settings;
-        return $settings;
-    }
 
-    public function update_settings($form) {
+            /*
+             * Settings
+             */
 
-        $settings_prev = unserialize($this->get_option('critic_matic_settings', false));
-
-        $ss = $settings_prev;
-        foreach ($form as $key => $value) {
-            if (isset($this->settings_def[$key])) {
-                $ss[$key] = $value;
-            }
-        }
-
-        if (isset($form['posts'])) {
-            $ss['critics_unique'] = $form['critics_unique'] ? 1 : 0;
-            $ss['posts_type_1'] = $form['posts_type_1'] ? 1 : 0;
-            $ss['posts_type_2'] = $form['posts_type_2'] ? 1 : 0;
-            $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
-            $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
-            $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
-        }
-
-        if (isset($form['parser_proxy'])) {
-            $ss['parser_proxy'] = base64_encode($form['parser_proxy']);
-            $ss['parser_arhive_async'] = $form['parser_arhive_async'] ? 1 : 0;
-        }
-
-        if (isset($form['games_tags'])) {
-            $ss['games_tags'] = base64_encode($form['games_tags']);
-        }
-
-        $audience_desc_encode = array();
-        if (isset($form['audience_descriptions'])) {
-            foreach ($this->settings_def['audience_desc'] as $key => $value) {
-                $audience_desc_encode[$key] = base64_encode(trim($form['au_' . $key]));
-            }
-            $ss['audience_desc'] = $audience_desc_encode;
-        }
-
-        // Upadate cookie content
-        if (isset($form['parser_cookie_text'])) {
-            $cookie_path = $this->settings_def['parser_cookie_path'];
-            if (file_exists($cookie_path)) {
-                unlink($cookie_path);
-            }
-            file_put_contents($cookie_path, $form['parser_cookie_text']);
-        }
-
-        // Actors rating logic
-        if (isset($form['actors_rating'])) {
-            $actors_star_ss = preg_replace('#^.*(/search/.*)$#', "$1", $form['actors_star_ss']);
-            $actors_main_ss = preg_replace('#^.*(/search/.*)$#', "$1", $form['actors_main_ss']);
-            $ss['actors_star_ss'] = base64_encode($actors_star_ss);
-            $ss['actors_main_ss'] = base64_encode($actors_main_ss);
-            if ($form['stars_reset'] || $form['main_reset']) {
-                try {
-                    if (!class_exists('MoviesActorWeight')) {
-                        require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesActorWeight.php' );
-                    }
-                    $maw = new MoviesActorWeight($this);
-                    if ($form['stars_reset']) {
-                        $opt = new MoviesActorStarOptions();
-                        $opt->reset();
-                    } else {
-                        $opt = new MoviesActorMainOptions();
-                        $opt->reset();
-                    }
-                } catch (Exception $exc) {
-                    
+            public function get_settings($cache = true) {
+                if ($cache && $this->settings) {
+                    return $this->settings;
                 }
-            }
-        }
+                // Get settings from options
+                $settings = unserialize($this->get_option('critic_matic_settings', '', false));
 
-        // Update options        
-        $this->update_option('critic_matic_settings', serialize($ss));
-
-        // Update settings
-        $this->settings = $this->get_settings();
-    }
-
-    public function get_parser_proxy($cache = true) {
-        $id = 1;
-        if ($cache) {
-            static $dict;
-            if (is_null($dict)) {
-                $dict = array();
-            }
-
-            if (isset($dict[$id])) {
-                return $dict[$id];
-            }
-        }
-        $proxy_arr = array();
-        $ss = $this->get_settings();
-        if ($ss['parser_proxy']) {
-            $proxy_text = base64_decode($ss['parser_proxy']);
-
-            if ($proxy_text) {
-                if (strstr($proxy_text, "\n")) {
-                    $proxy_arr = explode("\n", $proxy_text);
+                if ($settings && sizeof($settings)) {
+                    foreach ($this->settings_def as $key => $value) {
+                        if (!isset($settings[$key])) {
+                            //replace empty settings to default
+                            $settings[$key] = $value;
+                        } else {
+                            if ($key == 'audience_desc') {
+                                $audience_desc = $settings[$key];
+                                $au_decode = array();
+                                foreach ($audience_desc as $k => $v) {
+                                    $au_decode[$k] = base64_decode($v);
+                                }
+                                $settings[$key] = $au_decode;
+                            } else if ($key == 'games_tags') {
+                                $settings[$key] = base64_decode($settings[$key]);
+                            } else if ($key == 'actors_star_ss' || $key == 'actors_main_ss') {
+                                $settings[$key] = base64_decode($settings[$key]);
+                            }
+                        }
+                    }
                 } else {
-                    $proxy_arr = array($proxy_text);
+                    $settings = $this->settings_def;
                 }
+                $this->settings = $settings;
+                return $settings;
             }
-        }
-        if ($cache) {
-            $dict[$id] = $proxy_arr;
-        }
-        return $proxy_arr;
-    }
 
-    public function cron_already_run($cron_name, $wait = 10, $debug = false, $force = false) {
-        if ($wait == 0) {
-            $wait = 10;
-        }
+            public function update_settings($form) {
 
-        $curr_time = $this->curr_time();
+                $settings_prev = unserialize($this->get_option('critic_matic_settings', false));
 
-        // Last run
-        $run_key = $this->get_cron_name($cron_name);
-
-        $last_run = (int) $this->get_option($run_key);
-        // Already progress
-        $progress = $last_run ? $last_run : 0;
-
-        if (!$force && $progress) {
-            // Ignore old last update            
-
-            $wait_sec = $wait * 60; // sec
-            if ($curr_time < ($progress + $wait_sec)) {
-                // Cron already progress;                    
-                if ($debug) {
-                    print "Cron " . $cron_name . " already progress.";
+                $ss = $settings_prev;
+                foreach ($form as $key => $value) {
+                    if (isset($this->settings_def[$key])) {
+                        $ss[$key] = $value;
+                    }
                 }
-                return true;
-            }
-        }
-        return false;
-    }
 
-    public function register_cron($cron_name) {
-        $curr_time = $this->curr_time();
-        $run_key = $this->get_cron_name($cron_name);
-        $this->update_option($run_key, $curr_time);
-    }
+                if (isset($form['posts'])) {
+                    $ss['critics_unique'] = $form['critics_unique'] ? 1 : 0;
+                    $ss['posts_type_1'] = $form['posts_type_1'] ? 1 : 0;
+                    $ss['posts_type_2'] = $form['posts_type_2'] ? 1 : 0;
+                    $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
+                    $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
+                    $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
+                }
 
-    public function unregister_cron($cron_name) {
-        $run_key = $this->get_cron_name($cron_name);
-        $this->update_option($run_key, 0);
-    }
+                if (isset($form['parser_proxy'])) {
+                    $ss['parser_proxy'] = base64_encode($form['parser_proxy']);
+                    $ss['parser_arhive_async'] = $form['parser_arhive_async'] ? 1 : 0;
+                }
 
-    private function get_cron_name($cron_name) {
-        return 'cm_cron_' . $cron_name;
-    }
+                if (isset($form['games_tags'])) {
+                    $ss['games_tags'] = base64_encode($form['games_tags']);
+                }
 
-    public function get_critic_crowd($link_hash = '') {
-        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE link_hash='%s'", $link_hash);
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
+                $audience_desc_encode = array();
+                if (isset($form['audience_descriptions'])) {
+                    foreach ($this->settings_def['audience_desc'] as $key => $value) {
+                        $audience_desc_encode[$key] = base64_encode(trim($form['au_' . $key]));
+                    }
+                    $ss['audience_desc'] = $audience_desc_encode;
+                }
 
-    public function unic_id() {
-        $ip = $this->get_remote_ip();
-        $unic_id = md5($_SERVER["HTTP_USER_AGENT"] . $ip);
-        return $unic_id;
-    }
+                // Upadate cookie content
+                if (isset($form['parser_cookie_text'])) {
+                    $cookie_path = $this->settings_def['parser_cookie_path'];
+                    if (file_exists($cookie_path)) {
+                        unlink($cookie_path);
+                    }
+                    file_put_contents($cookie_path, $form['parser_cookie_text']);
+                }
 
-    /*
-     * Other
-     */
+                // Actors rating logic
+                if (isset($form['actors_rating'])) {
+                    $actors_star_ss = preg_replace('#^.*(/search/.*)$#', "$1", $form['actors_star_ss']);
+                    $actors_main_ss = preg_replace('#^.*(/search/.*)$#', "$1", $form['actors_main_ss']);
+                    $ss['actors_star_ss'] = base64_encode($actors_star_ss);
+                    $ss['actors_main_ss'] = base64_encode($actors_main_ss);
+                    if ($form['stars_reset'] || $form['main_reset']) {
+                        try {
+                            if (!class_exists('MoviesActorWeight')) {
+                                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesActorWeight.php' );
+                            }
+                            $maw = new MoviesActorWeight($this);
+                            if ($form['stars_reset']) {
+                                $opt = new MoviesActorStarOptions();
+                                $opt->reset();
+                            } else {
+                                $opt = new MoviesActorMainOptions();
+                                $opt->reset();
+                            }
+                        } catch (Exception $exc) {
+                            
+                        }
+                    }
+                }
 
-    public function crop_text($text = '', $length = 10, $tchk = true) {
-        if (strlen($text) > $length) {
-            $pos = strpos($text, ' ', $length);
-            if ($pos != null)
-                $text = substr($text, 0, $pos);
-            if ($tchk) {
-                $text = $text . '...';
-            }
-        }
-        return $text;
-    }
+                // Update options        
+                $this->update_option('critic_matic_settings', serialize($ss));
 
-    public function add_sphinx_counter() {
-        // maxdocid FROM sph_counter WHERE name = "critic"
-        $names = array('critic', 'movie', 'tvseries');
-        foreach ($names as $name) {
-            $sql = sprintf("SELECT maxdocid FROM sph_counter WHERE name='%s'", $name);
-            $id = $this->db_get_var($sql);
-
-            if (!$id) {
-                $sql = sprintf("INSERT INTO sph_counter (maxdocid, name) VALUES (%d, '%s')", 0, $name);
-                $this->db_query($sql);
-            }
-        }
-    }
-
-    // User permissions
-    public function user_can() {
-        global $user_ID;
-        if (user_can($user_ID, 'editor') || user_can($user_ID, 'administrator')) {
-            return true;
-        }
-        return false;
-    }
-
-    private function get_perpage() {
-        $this->perpage = isset($_GET['perpage']) ? (int) $_GET['perpage'] : $this->perpage;
-        return $this->perpage;
-    }
-
-    public function get_sync_tabs($tabs) {
-        $ret = array();
-        foreach ($tabs as $key => $item) {
-            $title = $item['title'];
-            $view = $item['sync_view'];
-
-            if ($view > 0 && $this->sync_status != $view) {
-                continue;
-            }
-            $ret[$key] = $title;
-        }
-        return $ret;
-    }
-
-    public function critic_delta_cron() {
-        $ts_dir = ABSPATH . "wp-content/uploads/docker_sphinx.txt";
-        if (file_exists($ts_dir)) {
-            unlink($ts_dir);
-        }
-
-        $data = array(
-            'cmd' => 'critic_delta',
-        );
-
-        if (!defined('SYNC_HOST')) {
-            return false;
-        }
-        $host = SYNC_HOST;
-        return $this->post($data, $host);
-    }
-
-    public function get_post_view_type($url = '') {
-        $view_type = 0;
-        foreach ($this->post_view_type_url as $str => $val) {
-            if (strstr($url, $str)) {
-                $view_type = $val;
-                break;
-            }
-        }
-        return $view_type;
-    }
-
-    public function get_critic_verdict($pid) {
-        $sql = sprintf("SELECT * FROM {$this->db['reviews_rating']} WHERE cid=%d", (int) $pid);
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    /*
-     * Geo data   
-     */
-
-    public function get_geo_flag_by_ip($ip, $size = 24) {
-        $ret = array('code' => '', 'name' => '', 'path' => '');
-        if (!$ip) {
-            return $ret;
-        }
-
-        static $dict;
-        if (is_null($dict)) {
-            $dict = array();
-        }
-        // Country code
-        if (isset($dict[$ip])) {
-            $country_code = $dict[$ip];
-        } else {
-            $data = $this->getGeoData($ip);
-            $country_code = isset($data['country_code']) ? $data['country_code'] : '';
-            $dict[$ip] = $country_code;
-        }
-
-        // Sizes
-        $sizes = array(16, 24, 32, 48, 64);
-
-        if (!in_array($size, $sizes)) {
-            $size = 24;
-        }
-
-        $country_name = '';
-
-        // Country path
-        $country_path = '';
-        if ($country_code) {
-            $country_name = $this->getCountryByCode($country_code);
-            $country_path = '/wp-content/plugins/critic_matic/lib/geoip/flags-iso/' . $size . '/' . strtolower($country_code) . '.png';
-            if (!file_exists(ABSPATH . $country_path)) {
-                $country_path = '';
-            }
-        }
-
-        return array('code' => $country_code, 'name' => $country_name, 'path' => $country_path);
-    }
-
-    /**
-     * функция определяет ip адрес по глобальному массиву $_SERVER
-     * ip адреса проверяются начиная с приоритетного, для определения возможного использования прокси
-     * @return ip-адрес
-     */
-    public function get_remote_ip() {
-        $ip = false;
-        if (isset($_SERVER['HTTP_CF_CONNECTING_IP']))
-            $ipa[] = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
-
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
-            $ipa[] = trim(strtok($_SERVER['HTTP_X_FORWARDED_FOR'], ','));
-
-        if (isset($_SERVER['HTTP_CLIENT_IP']))
-            $ipa[] = $_SERVER['HTTP_CLIENT_IP'];
-
-        if (isset($_SERVER['REMOTE_ADDR']))
-            $ipa[] = $_SERVER['REMOTE_ADDR'];
-
-        if (isset($_SERVER['HTTP_X_REAL_IP']))
-            $ipa[] = $_SERVER['HTTP_X_REAL_IP'];
-
-        // проверяем ip-адреса на валидность начиная с приоритетного.
-        foreach ($ipa as $ips) {
-            //  если ip валидный обрываем цикл, назначаем ip адрес и возвращаем его
-            if ($this->is_valid_ip($ips)) {
-                $ip = $ips;
-                break;
-            }
-        }
-
-        return $ip;
-    }
-
-    /**
-     * функция для проверки валидности ip адреса
-     * @param ip адрес в формате 1.2.3.4
-     * @return bolean : true - если ip валидный, иначе false
-     */
-    private function is_valid_ip($ip = null) {
-        if (preg_match("#^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$#", $ip))
-            return true; // если ip-адрес попадает под регулярное выражение, возвращаем true
-
-        return false; // иначе возвращаем false
-    }
-
-    public function getGeoData($ip = '') {
-
-        if ($ip == '127.0.0.1') {
-            return '';
-        }
-
-        $record = $this->getGeoIp2Data($ip);
-
-        if (isset($record->country->isoCode)) {
-            $res = $record->country->isoCode;
-        }
-
-        if (!$res) {
-            $res = $this->getGeoIpCountry($ip);
-        }
-
-        if ($res) {
-            // Krym
-            $res = $this->validateCrym($res, $ip);
-            return array('country_code' => $res);
-        }
-
-        return '';
-    }
-
-    private function get_reader() {
-        if (!$this->reader) {
-            if (!class_exists('GeoIp2')) {
-                // geoip2
-                require_once(ABSPATH . "wp-content/plugins/critic_matic/lib/geoip2/geoip2.phar");
-                // use GeoIp2\Database\Reader;                    
+                // Update settings
+                $this->settings = $this->get_settings();
             }
 
-            $country_db = 'GeoLite2-Country.mmdb';
-            $this->reader = new GeoIp2\Database\Reader(ABSPATH . 'wp-content/plugins/critic_matic/lib/geoip2/db/' . $country_db);
-        }
-        return $this->reader;
-    }
+            public function get_parser_proxy($cache = true) {
+                $id = 1;
+                if ($cache) {
+                    static $dict;
+                    if (is_null($dict)) {
+                        $dict = array();
+                    }
 
-    private function get_reader_city() {
-        if (!$this->reader_city) {
-            if (!class_exists('GeoIp2')) {
-                // geoip2
-                require_once(ABSPATH . "wp-content/plugins/critic_matic/lib/geoip2/geoip2.phar");
-                // use GeoIp2\Database\Reader;                    
+                    if (isset($dict[$id])) {
+                        return $dict[$id];
+                    }
+                }
+                $proxy_arr = array();
+                $ss = $this->get_settings();
+                if ($ss['parser_proxy']) {
+                    $proxy_text = base64_decode($ss['parser_proxy']);
+
+                    if ($proxy_text) {
+                        if (strstr($proxy_text, "\n")) {
+                            $proxy_arr = explode("\n", $proxy_text);
+                        } else {
+                            $proxy_arr = array($proxy_text);
+                        }
+                    }
+                }
+                if ($cache) {
+                    $dict[$id] = $proxy_arr;
+                }
+                return $proxy_arr;
             }
 
-            $city_db = 'GeoLite2-City.mmdb';
-            $this->reader_city = new GeoIp2\Database\Reader(ABSPATH . 'wp-content/plugins/critic_matic/lib/geoip2/db/' . $city_db);
-        }
-        return $this->reader_city;
-    }
+            public function cron_already_run($cron_name, $wait = 10, $debug = false, $force = false) {
+                if ($wait == 0) {
+                    $wait = 10;
+                }
 
-    private function get_geoip() {
-        if (!$this->geoip) {
-            if (!function_exists('GeoIP_record_by_addr')) {
-                require_once( ABSPATH . 'wp-content/plugins/critic_matic/lib/geoip/geoipcity.inc' );
+                $curr_time = $this->curr_time();
+
+                // Last run
+                $run_key = $this->get_cron_name($cron_name);
+
+                $last_run = (int) $this->get_option($run_key);
+                // Already progress
+                $progress = $last_run ? $last_run : 0;
+
+                if (!$force && $progress) {
+                    // Ignore old last update            
+
+                    $wait_sec = $wait * 60; // sec
+                    if ($curr_time < ($progress + $wait_sec)) {
+                        // Cron already progress;                    
+                        if ($debug) {
+                            print "Cron " . $cron_name . " already progress.";
+                        }
+                        return true;
+                    }
+                }
+                return false;
             }
-            $this->geoip = geoip_open(ABSPATH . "wp-content/plugins/critic_matic/lib/geoip/db/GeoIP.dat", GEOIP_STANDARD);
-        }
-        return $this->geoip;
-    }
 
-    private function close_geoip() {
-        if (function_exists('geoip_close')) {
-            geoip_close($this->geoip);
-        }
-    }
+            public function register_cron($cron_name) {
+                $curr_time = $this->curr_time();
+                $run_key = $this->get_cron_name($cron_name);
+                $this->update_option($run_key, $curr_time);
+            }
 
-    // Geoip 2
-    private function getGeoIp2Data($ip) {
+            public function unregister_cron($cron_name) {
+                $run_key = $this->get_cron_name($cron_name);
+                $this->update_option($run_key, 0);
+            }
 
-        if ($ip == '127.0.0.1') {
-            return '';
-        }
+            private function get_cron_name($cron_name) {
+                return 'cm_cron_' . $cron_name;
+            }
 
-        $reader = $this->get_reader();
+            public function get_critic_crowd($link_hash = '') {
+                $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE link_hash='%s'", $link_hash);
+                $result = $this->db_fetch_row($sql);
+                return $result;
+            }
 
-        try {
-            $record = $reader->country($ip);
-        } catch (Exception $e) {
-            $record = '';
-        }
+            public function unic_id() {
+                $ip = $this->get_remote_ip();
+                $unic_id = md5($_SERVER["HTTP_USER_AGENT"] . $ip);
+                return $unic_id;
+            }
 
-        return $record;
-    }
+            /*
+             * Other
+             */
 
-    private function getGeoIpCountry($ip) {
-        $res = '';
+            public function crop_text($text = '', $length = 10, $tchk = true) {
+                if (strlen($text) > $length) {
+                    $pos = strpos($text, ' ', $length);
+                    if ($pos != null)
+                        $text = substr($text, 0, $pos);
+                    if ($tchk) {
+                        $text = $text . '...';
+                    }
+                }
+                return $text;
+            }
 
-        $gi = $this->get_geoip();
-        try {
-            $res = geoip_country_code_by_addr($gi, $ip);
-        } catch (Exception $e) {
-            //return ''
-        }
+            public function add_sphinx_counter() {
+                // maxdocid FROM sph_counter WHERE name = "critic"
+                $names = array('critic', 'movie', 'tvseries');
+                foreach ($names as $name) {
+                    $sql = sprintf("SELECT maxdocid FROM sph_counter WHERE name='%s'", $name);
+                    $id = $this->db_get_var($sql);
 
-        return $res;
-    }
-
-    private function getGeoIp2CityData($ip) {
-
-        if ($ip == '127.0.0.1') {
-            return '';
-        }
-
-        $reader_city = $this->get_reader_city();
-        try {
-            $record = $reader_city->city($ip);
-        } catch (Exception $e) {
-            $record = '';
-        }
-
-        return $record;
-    }
-
-    private function validateCrym($ccode, $ip) {
-        if ($ccode == 'UA') {
-            $record = $this->getGeoIp2CityData($ip);
-            if (isset($record->city->name)) {
-                // Russian cities    
-                $rucity = array('Sevastopol', 'Simferopol', 'Luhansk', 'Donetsk', 'Feodosiya');
-                if (in_array($record->city->name, $rucity)) {
-                    $ccode = 'RU';
+                    if (!$id) {
+                        $sql = sprintf("INSERT INTO sph_counter (maxdocid, name) VALUES (%d, '%s')", 0, $name);
+                        $this->db_query($sql);
+                    }
                 }
             }
 
-            // Ip mask search
-            if ($ccode != 'RU') {
-                $rus_ips = array('194.127.112.', '194.127.113.');
-                foreach ($rus_ips as $mask) {
-                    if (strstr($ip, $mask)) {
-                        $ccode = 'RU';
+            // User permissions
+            public function user_can() {
+                global $user_ID;
+                if (user_can($user_ID, 'editor') || user_can($user_ID, 'administrator')) {
+                    return true;
+                }
+                return false;
+            }
+
+            private function get_perpage() {
+                $this->perpage = isset($_GET['perpage']) ? (int) $_GET['perpage'] : $this->perpage;
+                return $this->perpage;
+            }
+
+            public function get_sync_tabs($tabs) {
+                $ret = array();
+                foreach ($tabs as $key => $item) {
+                    $title = $item['title'];
+                    $view = $item['sync_view'];
+
+                    if ($view > 0 && $this->sync_status != $view) {
+                        continue;
+                    }
+                    $ret[$key] = $title;
+                }
+                return $ret;
+            }
+
+            public function critic_delta_cron() {
+                $ts_dir = ABSPATH . "wp-content/uploads/docker_sphinx.txt";
+                if (file_exists($ts_dir)) {
+                    unlink($ts_dir);
+                }
+
+                $data = array(
+                    'cmd' => 'critic_delta',
+                );
+
+                if (!defined('SYNC_HOST')) {
+                    return false;
+                }
+                $host = SYNC_HOST;
+                return $this->post($data, $host);
+            }
+
+            public function get_post_view_type($url = '') {
+                $view_type = 0;
+                foreach ($this->post_view_type_url as $str => $val) {
+                    if (strstr($url, $str)) {
+                        $view_type = $val;
                         break;
                     }
                 }
+                return $view_type;
             }
-        }
-        return $ccode;
-    }
 
-    public function getCountryByCode($code) {
-        if (!$code)
-            return '';
-        $names = array(
-            "AP" => "Asia/Pacific Region",
-            "EU" => "Europe",
-            "AD" => "Andorra",
-            "AE" => "the United Arab Emirates",
-            "AF" => "Afghanistan",
-            "AG" => "Antigua and Barbuda",
-            "AI" => "Anguilla",
-            "AL" => "Albania",
-            "AM" => "Armenia",
-            "CW" => "Curcao",
-            "AO" => "Angola",
-            "AQ" => "Antarctica",
-            "AR" => "Argentina",
-            "AS" => "American Samoa",
-            "AT" => "Austria",
-            "AU" => "Australia",
-            "AW" => "Aruba",
-            "AZ" => "Azerbaijan",
-            "BA" => "Bosnia and Herzegovina",
-            "BB" => "Barbados",
-            "BD" => "Bangladesh",
-            "BE" => "Belgium",
-            "BF" => "Burkina Faso",
-            "BG" => "Bulgaria",
-            "BH" => "Bahrain",
-            "BI" => "Burundi",
-            "BJ" => "Benin",
-            "BM" => "Bermuda",
-            "BN" => "Brunei Darussalam",
-            "BO" => "Bolivia",
-            "BR" => "Brazil",
-            "BS" => "Bahamas",
-            "BT" => "Bhutan",
-            "BV" => "Bouvet Island",
-            "BW" => "Botswana",
-            "BY" => "Belarus",
-            "BZ" => "Belize",
-            "CA" => "Canada",
-            "CC" => "Cocos (Keeling) Islands",
-            "CD" => "the Democratic Republic of the Congo",
-            "CF" => "the Central African Republic",
-            "CG" => "Congo",
-            "CH" => "Switzerland",
-            "CI" => "Cote D'Ivoire",
-            "CK" => "Cook Islands",
-            "CL" => "Chile",
-            "CM" => "Cameroon",
-            "CN" => "China",
-            "CO" => "Colombia",
-            "CR" => "Costa Rica",
-            "CU" => "Cuba",
-            "CV" => "Cape Verde",
-            "CX" => "Christmas Island",
-            "CY" => "Cyprus",
-            "CZ" => "the Czech Republic",
-            "DE" => "Germany",
-            "DJ" => "Djibouti",
-            "DK" => "Denmark",
-            "DM" => "Dominica",
-            "DO" => "the Dominican Republic",
-            "DZ" => "Algeria",
-            "EC" => "Ecuador",
-            "EE" => "Estonia",
-            "EG" => "Egypt",
-            "EH" => "Western Sahara",
-            "ER" => "Eritrea",
-            "ES" => "Spain",
-            "ET" => "Ethiopia",
-            "FI" => "Finland",
-            "FJ" => "Fiji",
-            "FK" => "the Falkland Islands",
-            "FM" => "Micronesia",
-            "FO" => "Faroe Islands",
-            "FR" => "France",
-            "SX" => "Sint Maarten (Dutch part)",
-            "GA" => "Gabon",
-            "GB" => "the United Kingdom",
-            "GD" => "Grenada",
-            "GE" => "Georgia",
-            "GF" => "French Guiana",
-            "GH" => "Ghana",
-            "GI" => "Gibraltar",
-            "GL" => "Greenland",
-            "GM" => "Gambia",
-            "GN" => "Guinea",
-            "GP" => "Guadeloupe",
-            "GQ" => "Equatorial Guinea",
-            "GR" => "Greece",
-            "GS" => "South Georgia and the South Sandwich Islands",
-            "GT" => "Guatemala",
-            "GU" => "Guam",
-            "GW" => "Guinea-Bissau",
-            "GY" => "Guyana",
-            "HK" => "Hong Kong",
-            "HM" => "Heard Island and McDonald Islands",
-            "HN" => "Honduras",
-            "HR" => "Croatia",
-            "HT" => "Haiti",
-            "HU" => "Hungary",
-            "ID" => "Indonesia",
-            "IE" => "Ireland",
-            "IL" => "Israel",
-            "IN" => "India",
-            "IO" => "British Indian Ocean Territory",
-            "IQ" => "Iraq",
-            "IR" => "Iran Islamic Republic of",
-            "IS" => "Iceland",
-            "IT" => "Italy",
-            "JM" => "Jamaica",
-            "JO" => "Jordan",
-            "JP" => "Japan",
-            "KE" => "Kenya",
-            "KG" => "Kyrgyzstan",
-            "KH" => "Cambodia",
-            "KI" => "Kiribati",
-            "KM" => "Comoros",
-            "KN" => "Saint Kitts and Nevis",
-            "KP" => "Korea Democratic People's Republic of",
-            "KR" => "Korea Republic of",
-            "KW" => "Kuwait",
-            "KY" => "Cayman Islands",
-            "KZ" => "Kazakhstan",
-            "LA" => "Lao People's Democratic Republic",
-            "LB" => "Lebanon",
-            "LC" => "Saint Lucia",
-            "LI" => "Liechtenstein",
-            "LK" => "Sri Lanka",
-            "LR" => "Liberia",
-            "LS" => "Lesotho",
-            "LT" => "Lithuania",
-            "LU" => "Luxembourg",
-            "LV" => "Latvia",
-            "LY" => "Libya",
-            "MA" => "Morocco",
-            "MC" => "Monaco",
-            "MD" => "Moldova",
-            "MG" => "Madagascar",
-            "MH" => "Marshall Islands",
-            "MK" => "Macedonia",
-            "ML" => "Mali",
-            "MM" => "Myanmar",
-            "MN" => "Mongolia",
-            "MO" => "Macau",
-            "MP" => "Northern Mariana Islands",
-            "MQ" => "Martinique",
-            "MR" => "Mauritania",
-            "MS" => "Montserrat",
-            "MT" => "Malta",
-            "MU" => "Mauritius",
-            "MV" => "Maldives",
-            "MW" => "Malawi",
-            "MX" => "Mexico",
-            "MY" => "Malaysia",
-            "MZ" => "Mozambique",
-            "NA" => "Namibia",
-            "NC" => "New Caledonia",
-            "NE" => "Niger",
-            "NF" => "Norfolk Island",
-            "NG" => "Nigeria",
-            "NI" => "Nicaragua",
-            "NL" => "the Netherlands",
-            "NO" => "Norway",
-            "NP" => "Nepal",
-            "NR" => "Nauru",
-            "NU" => "Niue",
-            "NZ" => "New Zealand",
-            "OM" => "Oman",
-            "PA" => "Panama",
-            "PE" => "Peru",
-            "PF" => "French Polynesia",
-            "PG" => "Papua New Guinea",
-            "PH" => "Philippines",
-            "PK" => "Pakistan",
-            "PL" => "Poland",
-            "PM" => "Saint Pierre and Miquelon",
-            "PN" => "Pitcairn Islands",
-            "PR" => "Puerto Rico",
-            "PS" => "Palestinian Territory",
-            "PT" => "Portugal",
-            "PW" => "Palau",
-            "PY" => "Paraguay",
-            "QA" => "Qatar",
-            "RE" => "Reunion",
-            "RO" => "Romania",
-            "RU" => "the Russian Federation",
-            "RW" => "Rwanda",
-            "SA" => "Saudi Arabia",
-            "SB" => "Solomon Islands",
-            "SC" => "Seychelles",
-            "SD" => "Sudan",
-            "SE" => "Sweden",
-            "SG" => "Singapore",
-            "SH" => "Saint Helena",
-            "SI" => "Slovenia",
-            "SJ" => "Svalbard and Jan Mayen",
-            "SK" => "Slovakia",
-            "SL" => "Sierra Leone",
-            "SM" => "San Marino",
-            "SN" => "Senegal",
-            "SO" => "Somalia",
-            "SR" => "Suriname",
-            "ST" => "Sao Tome and Principe",
-            "SV" => "El Salvador",
-            "SY" => "Syrian Arab Republic",
-            "SZ" => "Swaziland",
-            "TC" => "Turks and Caicos Islands",
-            "TD" => "Chad",
-            "TF" => "French Southern Territories",
-            "TG" => "Togo",
-            "TH" => "Thailand",
-            "TJ" => "Tajikistan",
-            "TK" => "Tokelau",
-            "TM" => "Turkmenistan",
-            "TN" => "Tunisia",
-            "TO" => "Tonga",
-            "TL" => "Timor-Leste",
-            "TR" => "Turkey",
-            "TT" => "Trinidad and Tobago",
-            "TV" => "Tuvalu",
-            "TW" => "Taiwan",
-            "TZ" => "Tanzania",
-            "UA" => "Ukraine",
-            "UG" => "Uganda",
-            "UM" => "the United States Minor Outlying Islands",
-            "US" => "the United States",
-            "UY" => "Uruguay",
-            "UZ" => "Uzbekistan",
-            "VA" => "Holy See (Vatican City State)",
-            "VC" => "Saint Vincent and the Grenadines",
-            "VE" => "Venezuela",
-            "VG" => "Virgin Islands British",
-            "VI" => "Virgin Islands U.S.",
-            "VN" => "Vietnam",
-            "VU" => "Vanuatu",
-            "WF" => "Wallis and Futuna",
-            "WS" => "Samoa",
-            "YE" => "Yemen",
-            "YT" => "Mayotte",
-            "RS" => "Serbia",
-            "ZA" => "South Africa",
-            "ZM" => "Zambia",
-            "ME" => "Montenegro",
-            "ZW" => "Zimbabwe",
-            "A1" => "Anonymous Proxy",
-            "A2" => "Satellite Provider",
-            "O1" => "Other",
-            "AX" => "Aland Islands",
-            "GG" => "Guernsey",
-            "IM" => "the Isle of Man",
-            "JE" => "Jersey",
-            "BL" => "Saint Barthelemy",
-            "MF" => "Saint Martin",
-            "BQ" => "Bonaire Saint Eustatius and Saba",
-        );
-        if (isset($names[$code]))
-            return $names[$code];
-        else
-            return $code;
-    }
-
-    public function get_domain_by_url($url = '') {
-        $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
-        return $domain;
-    }
-
-    public function post($data = array(), $host = '', $timeout = 1) {
-        $ss = $this->get_settings();
-        $curl_user_agent = $ss['parser_user_agent'];
-        $fields_string = http_build_query($data);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $host);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        if ($curl_user_agent) {
-            curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
-        }
-
-        $result = curl_exec($ch);
-
-        return $result;
-    }
-
-    public function theme_table($data) {
-        $ret = '';
-        if (!empty($data)) {
-            $ret .= '<table class="wp-list-table widefat striped table-view-list"><tr>';
-
-            // Получение заголовков (названий полей) из первого объекта
-            $firstObject = $data[0];
-            foreach ($firstObject as $key => $value) {
-                $ret .= "<th>$key</th>";
+            public function get_critic_verdict($pid) {
+                $sql = sprintf("SELECT * FROM {$this->db['reviews_rating']} WHERE cid=%d", (int) $pid);
+                $result = $this->db_fetch_row($sql);
+                return $result;
             }
-            $ret .= "</tr>";
 
-            // Вывод данных
-            foreach ($data as $object) {
-                $ret .= "<tr>";
-                foreach ($object as $value) {
-                    $ret .= "<td>$value</td>";
+            /*
+             * Geo data   
+             */
+
+            public function get_geo_flag_by_ip($ip, $size = 24) {
+                $ret = array('code' => '', 'name' => '', 'path' => '');
+                if (!$ip) {
+                    return $ret;
                 }
-                $ret .= "</tr>";
+
+                static $dict;
+                if (is_null($dict)) {
+                    $dict = array();
+                }
+                // Country code
+                if (isset($dict[$ip])) {
+                    $country_code = $dict[$ip];
+                } else {
+                    $data = $this->getGeoData($ip);
+                    $country_code = isset($data['country_code']) ? $data['country_code'] : '';
+                    $dict[$ip] = $country_code;
+                }
+
+                // Sizes
+                $sizes = array(16, 24, 32, 48, 64);
+
+                if (!in_array($size, $sizes)) {
+                    $size = 24;
+                }
+
+                $country_name = '';
+
+                // Country path
+                $country_path = '';
+                if ($country_code) {
+                    $country_name = $this->getCountryByCode($country_code);
+                    $country_path = '/wp-content/plugins/critic_matic/lib/geoip/flags-iso/' . $size . '/' . strtolower($country_code) . '.png';
+                    if (!file_exists(ABSPATH . $country_path)) {
+                        $country_path = '';
+                    }
+                }
+
+                return array('code' => $country_code, 'name' => $country_name, 'path' => $country_path);
             }
 
-            $ret .= "</table>";
-        } else {
-            $ret .= "Data not found.";
-        }
-        return $ret;
-    }
+            /**
+             * функция определяет ip адрес по глобальному массиву $_SERVER
+             * ip адреса проверяются начиная с приоритетного, для определения возможного использования прокси
+             * @return ip-адрес
+             */
+            public function get_remote_ip() {
+                $ip = false;
+                if (isset($_SERVER['HTTP_CF_CONNECTING_IP']))
+                    $ipa[] = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
 
-    public function is_admin($cache = true) {
-        static $cached = null;
+                if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+                    $ipa[] = trim(strtok($_SERVER['HTTP_X_FORWARDED_FOR'], ','));
 
-        if ($cache) {
-            if ($cached !== null) {
-                return $cached;
+                if (isset($_SERVER['HTTP_CLIENT_IP']))
+                    $ipa[] = $_SERVER['HTTP_CLIENT_IP'];
+
+                if (isset($_SERVER['REMOTE_ADDR']))
+                    $ipa[] = $_SERVER['REMOTE_ADDR'];
+
+                if (isset($_SERVER['HTTP_X_REAL_IP']))
+                    $ipa[] = $_SERVER['HTTP_X_REAL_IP'];
+
+                // проверяем ip-адреса на валидность начиная с приоритетного.
+                foreach ($ipa as $ips) {
+                    //  если ip валидный обрываем цикл, назначаем ip адрес и возвращаем его
+                    if ($this->is_valid_ip($ips)) {
+                        $ip = $ips;
+                        break;
+                    }
+                }
+
+                return $ip;
             }
-        } else {
-            $cached = null;
-        }
 
-        $is_admin = false;
+            /**
+             * функция для проверки валидности ip адреса
+             * @param ip адрес в формате 1.2.3.4
+             * @return bolean : true - если ip валидный, иначе false
+             */
+            private function is_valid_ip($ip = null) {
+                if (preg_match("#^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$#", $ip))
+                    return true; // если ip-адрес попадает под регулярное выражение, возвращаем true
 
-        // TODO: get admin role without wp core
-        if (function_exists('current_user_can')) {
-            $is_admin = current_user_can("editor") || current_user_can("administrator");
-        }
+                return false; // иначе возвращаем false
+            }
 
-        if ($cache) {
-            $cached = $is_admin;
-        }
+            public function getGeoData($ip = '') {
 
-        return $is_admin;
-    }
+                if ($ip == '127.0.0.1') {
+                    return '';
+                }
 
-    public function get_avatars() {
-        $avatars = [];
-        $dir = ABSPATH . 'wp-content/uploads/avatars/custom/';
+                $record = $this->getGeoIp2Data($ip);
 
-        $files = scandir($dir);
+                if (isset($record->country->isoCode)) {
+                    $res = $record->country->isoCode;
+                }
 
-        foreach ($files as $val) {
-            if ($val != '.' && $val != '..') {
-                $regv = '#(\d+)\-(\d+)-128\.[jpgn]+#';
-                if (preg_match($regv, $val, $mach)) {
-                    $avatars[$mach[2]][$mach[1]] = $val;
+                if (!$res) {
+                    $res = $this->getGeoIpCountry($ip);
+                }
+
+                if ($res) {
+                    // Krym
+                    $res = $this->validateCrym($res, $ip);
+                    return array('country_code' => $res);
+                }
+
+                return '';
+            }
+
+            private function get_reader() {
+                if (!$this->reader) {
+                    if (!class_exists('GeoIp2')) {
+                        // geoip2
+                        require_once(ABSPATH . "wp-content/plugins/critic_matic/lib/geoip2/geoip2.phar");
+                        // use GeoIp2\Database\Reader;                    
+                    }
+
+                    $country_db = 'GeoLite2-Country.mmdb';
+                    $this->reader = new GeoIp2\Database\Reader(ABSPATH . 'wp-content/plugins/critic_matic/lib/geoip2/db/' . $country_db);
+                }
+                return $this->reader;
+            }
+
+            private function get_reader_city() {
+                if (!$this->reader_city) {
+                    if (!class_exists('GeoIp2')) {
+                        // geoip2
+                        require_once(ABSPATH . "wp-content/plugins/critic_matic/lib/geoip2/geoip2.phar");
+                        // use GeoIp2\Database\Reader;                    
+                    }
+
+                    $city_db = 'GeoLite2-City.mmdb';
+                    $this->reader_city = new GeoIp2\Database\Reader(ABSPATH . 'wp-content/plugins/critic_matic/lib/geoip2/db/' . $city_db);
+                }
+                return $this->reader_city;
+            }
+
+            private function get_geoip() {
+                if (!$this->geoip) {
+                    if (!function_exists('GeoIP_record_by_addr')) {
+                        require_once( ABSPATH . 'wp-content/plugins/critic_matic/lib/geoip/geoipcity.inc' );
+                    }
+                    $this->geoip = geoip_open(ABSPATH . "wp-content/plugins/critic_matic/lib/geoip/db/GeoIP.dat", GEOIP_STANDARD);
+                }
+                return $this->geoip;
+            }
+
+            private function close_geoip() {
+                if (function_exists('geoip_close')) {
+                    geoip_close($this->geoip);
                 }
             }
+
+            // Geoip 2
+            private function getGeoIp2Data($ip) {
+
+                if ($ip == '127.0.0.1') {
+                    return '';
+                }
+
+                $reader = $this->get_reader();
+
+                try {
+                    $record = $reader->country($ip);
+                } catch (Exception $e) {
+                    $record = '';
+                }
+
+                return $record;
+            }
+
+            private function getGeoIpCountry($ip) {
+                $res = '';
+
+                $gi = $this->get_geoip();
+                try {
+                    $res = geoip_country_code_by_addr($gi, $ip);
+                } catch (Exception $e) {
+                    //return ''
+                }
+
+                return $res;
+            }
+
+            private function getGeoIp2CityData($ip) {
+
+                if ($ip == '127.0.0.1') {
+                    return '';
+                }
+
+                $reader_city = $this->get_reader_city();
+                try {
+                    $record = $reader_city->city($ip);
+                } catch (Exception $e) {
+                    $record = '';
+                }
+
+                return $record;
+            }
+
+            private function validateCrym($ccode, $ip) {
+                if ($ccode == 'UA') {
+                    $record = $this->getGeoIp2CityData($ip);
+                    if (isset($record->city->name)) {
+                        // Russian cities    
+                        $rucity = array('Sevastopol', 'Simferopol', 'Luhansk', 'Donetsk', 'Feodosiya');
+                        if (in_array($record->city->name, $rucity)) {
+                            $ccode = 'RU';
+                        }
+                    }
+
+                    // Ip mask search
+                    if ($ccode != 'RU') {
+                        $rus_ips = array('194.127.112.', '194.127.113.');
+                        foreach ($rus_ips as $mask) {
+                            if (strstr($ip, $mask)) {
+                                $ccode = 'RU';
+                                break;
+                            }
+                        }
+                    }
+                }
+                return $ccode;
+            }
+
+            public function getCountryByCode($code) {
+                if (!$code)
+                    return '';
+                $names = array(
+                    "AP" => "Asia/Pacific Region",
+                    "EU" => "Europe",
+                    "AD" => "Andorra",
+                    "AE" => "the United Arab Emirates",
+                    "AF" => "Afghanistan",
+                    "AG" => "Antigua and Barbuda",
+                    "AI" => "Anguilla",
+                    "AL" => "Albania",
+                    "AM" => "Armenia",
+                    "CW" => "Curcao",
+                    "AO" => "Angola",
+                    "AQ" => "Antarctica",
+                    "AR" => "Argentina",
+                    "AS" => "American Samoa",
+                    "AT" => "Austria",
+                    "AU" => "Australia",
+                    "AW" => "Aruba",
+                    "AZ" => "Azerbaijan",
+                    "BA" => "Bosnia and Herzegovina",
+                    "BB" => "Barbados",
+                    "BD" => "Bangladesh",
+                    "BE" => "Belgium",
+                    "BF" => "Burkina Faso",
+                    "BG" => "Bulgaria",
+                    "BH" => "Bahrain",
+                    "BI" => "Burundi",
+                    "BJ" => "Benin",
+                    "BM" => "Bermuda",
+                    "BN" => "Brunei Darussalam",
+                    "BO" => "Bolivia",
+                    "BR" => "Brazil",
+                    "BS" => "Bahamas",
+                    "BT" => "Bhutan",
+                    "BV" => "Bouvet Island",
+                    "BW" => "Botswana",
+                    "BY" => "Belarus",
+                    "BZ" => "Belize",
+                    "CA" => "Canada",
+                    "CC" => "Cocos (Keeling) Islands",
+                    "CD" => "the Democratic Republic of the Congo",
+                    "CF" => "the Central African Republic",
+                    "CG" => "Congo",
+                    "CH" => "Switzerland",
+                    "CI" => "Cote D'Ivoire",
+                    "CK" => "Cook Islands",
+                    "CL" => "Chile",
+                    "CM" => "Cameroon",
+                    "CN" => "China",
+                    "CO" => "Colombia",
+                    "CR" => "Costa Rica",
+                    "CU" => "Cuba",
+                    "CV" => "Cape Verde",
+                    "CX" => "Christmas Island",
+                    "CY" => "Cyprus",
+                    "CZ" => "the Czech Republic",
+                    "DE" => "Germany",
+                    "DJ" => "Djibouti",
+                    "DK" => "Denmark",
+                    "DM" => "Dominica",
+                    "DO" => "the Dominican Republic",
+                    "DZ" => "Algeria",
+                    "EC" => "Ecuador",
+                    "EE" => "Estonia",
+                    "EG" => "Egypt",
+                    "EH" => "Western Sahara",
+                    "ER" => "Eritrea",
+                    "ES" => "Spain",
+                    "ET" => "Ethiopia",
+                    "FI" => "Finland",
+                    "FJ" => "Fiji",
+                    "FK" => "the Falkland Islands",
+                    "FM" => "Micronesia",
+                    "FO" => "Faroe Islands",
+                    "FR" => "France",
+                    "SX" => "Sint Maarten (Dutch part)",
+                    "GA" => "Gabon",
+                    "GB" => "the United Kingdom",
+                    "GD" => "Grenada",
+                    "GE" => "Georgia",
+                    "GF" => "French Guiana",
+                    "GH" => "Ghana",
+                    "GI" => "Gibraltar",
+                    "GL" => "Greenland",
+                    "GM" => "Gambia",
+                    "GN" => "Guinea",
+                    "GP" => "Guadeloupe",
+                    "GQ" => "Equatorial Guinea",
+                    "GR" => "Greece",
+                    "GS" => "South Georgia and the South Sandwich Islands",
+                    "GT" => "Guatemala",
+                    "GU" => "Guam",
+                    "GW" => "Guinea-Bissau",
+                    "GY" => "Guyana",
+                    "HK" => "Hong Kong",
+                    "HM" => "Heard Island and McDonald Islands",
+                    "HN" => "Honduras",
+                    "HR" => "Croatia",
+                    "HT" => "Haiti",
+                    "HU" => "Hungary",
+                    "ID" => "Indonesia",
+                    "IE" => "Ireland",
+                    "IL" => "Israel",
+                    "IN" => "India",
+                    "IO" => "British Indian Ocean Territory",
+                    "IQ" => "Iraq",
+                    "IR" => "Iran Islamic Republic of",
+                    "IS" => "Iceland",
+                    "IT" => "Italy",
+                    "JM" => "Jamaica",
+                    "JO" => "Jordan",
+                    "JP" => "Japan",
+                    "KE" => "Kenya",
+                    "KG" => "Kyrgyzstan",
+                    "KH" => "Cambodia",
+                    "KI" => "Kiribati",
+                    "KM" => "Comoros",
+                    "KN" => "Saint Kitts and Nevis",
+                    "KP" => "Korea Democratic People's Republic of",
+                    "KR" => "Korea Republic of",
+                    "KW" => "Kuwait",
+                    "KY" => "Cayman Islands",
+                    "KZ" => "Kazakhstan",
+                    "LA" => "Lao People's Democratic Republic",
+                    "LB" => "Lebanon",
+                    "LC" => "Saint Lucia",
+                    "LI" => "Liechtenstein",
+                    "LK" => "Sri Lanka",
+                    "LR" => "Liberia",
+                    "LS" => "Lesotho",
+                    "LT" => "Lithuania",
+                    "LU" => "Luxembourg",
+                    "LV" => "Latvia",
+                    "LY" => "Libya",
+                    "MA" => "Morocco",
+                    "MC" => "Monaco",
+                    "MD" => "Moldova",
+                    "MG" => "Madagascar",
+                    "MH" => "Marshall Islands",
+                    "MK" => "Macedonia",
+                    "ML" => "Mali",
+                    "MM" => "Myanmar",
+                    "MN" => "Mongolia",
+                    "MO" => "Macau",
+                    "MP" => "Northern Mariana Islands",
+                    "MQ" => "Martinique",
+                    "MR" => "Mauritania",
+                    "MS" => "Montserrat",
+                    "MT" => "Malta",
+                    "MU" => "Mauritius",
+                    "MV" => "Maldives",
+                    "MW" => "Malawi",
+                    "MX" => "Mexico",
+                    "MY" => "Malaysia",
+                    "MZ" => "Mozambique",
+                    "NA" => "Namibia",
+                    "NC" => "New Caledonia",
+                    "NE" => "Niger",
+                    "NF" => "Norfolk Island",
+                    "NG" => "Nigeria",
+                    "NI" => "Nicaragua",
+                    "NL" => "the Netherlands",
+                    "NO" => "Norway",
+                    "NP" => "Nepal",
+                    "NR" => "Nauru",
+                    "NU" => "Niue",
+                    "NZ" => "New Zealand",
+                    "OM" => "Oman",
+                    "PA" => "Panama",
+                    "PE" => "Peru",
+                    "PF" => "French Polynesia",
+                    "PG" => "Papua New Guinea",
+                    "PH" => "Philippines",
+                    "PK" => "Pakistan",
+                    "PL" => "Poland",
+                    "PM" => "Saint Pierre and Miquelon",
+                    "PN" => "Pitcairn Islands",
+                    "PR" => "Puerto Rico",
+                    "PS" => "Palestinian Territory",
+                    "PT" => "Portugal",
+                    "PW" => "Palau",
+                    "PY" => "Paraguay",
+                    "QA" => "Qatar",
+                    "RE" => "Reunion",
+                    "RO" => "Romania",
+                    "RU" => "the Russian Federation",
+                    "RW" => "Rwanda",
+                    "SA" => "Saudi Arabia",
+                    "SB" => "Solomon Islands",
+                    "SC" => "Seychelles",
+                    "SD" => "Sudan",
+                    "SE" => "Sweden",
+                    "SG" => "Singapore",
+                    "SH" => "Saint Helena",
+                    "SI" => "Slovenia",
+                    "SJ" => "Svalbard and Jan Mayen",
+                    "SK" => "Slovakia",
+                    "SL" => "Sierra Leone",
+                    "SM" => "San Marino",
+                    "SN" => "Senegal",
+                    "SO" => "Somalia",
+                    "SR" => "Suriname",
+                    "ST" => "Sao Tome and Principe",
+                    "SV" => "El Salvador",
+                    "SY" => "Syrian Arab Republic",
+                    "SZ" => "Swaziland",
+                    "TC" => "Turks and Caicos Islands",
+                    "TD" => "Chad",
+                    "TF" => "French Southern Territories",
+                    "TG" => "Togo",
+                    "TH" => "Thailand",
+                    "TJ" => "Tajikistan",
+                    "TK" => "Tokelau",
+                    "TM" => "Turkmenistan",
+                    "TN" => "Tunisia",
+                    "TO" => "Tonga",
+                    "TL" => "Timor-Leste",
+                    "TR" => "Turkey",
+                    "TT" => "Trinidad and Tobago",
+                    "TV" => "Tuvalu",
+                    "TW" => "Taiwan",
+                    "TZ" => "Tanzania",
+                    "UA" => "Ukraine",
+                    "UG" => "Uganda",
+                    "UM" => "the United States Minor Outlying Islands",
+                    "US" => "the United States",
+                    "UY" => "Uruguay",
+                    "UZ" => "Uzbekistan",
+                    "VA" => "Holy See (Vatican City State)",
+                    "VC" => "Saint Vincent and the Grenadines",
+                    "VE" => "Venezuela",
+                    "VG" => "Virgin Islands British",
+                    "VI" => "Virgin Islands U.S.",
+                    "VN" => "Vietnam",
+                    "VU" => "Vanuatu",
+                    "WF" => "Wallis and Futuna",
+                    "WS" => "Samoa",
+                    "YE" => "Yemen",
+                    "YT" => "Mayotte",
+                    "RS" => "Serbia",
+                    "ZA" => "South Africa",
+                    "ZM" => "Zambia",
+                    "ME" => "Montenegro",
+                    "ZW" => "Zimbabwe",
+                    "A1" => "Anonymous Proxy",
+                    "A2" => "Satellite Provider",
+                    "O1" => "Other",
+                    "AX" => "Aland Islands",
+                    "GG" => "Guernsey",
+                    "IM" => "the Isle of Man",
+                    "JE" => "Jersey",
+                    "BL" => "Saint Barthelemy",
+                    "MF" => "Saint Martin",
+                    "BQ" => "Bonaire Saint Eustatius and Saba",
+                );
+                if (isset($names[$code]))
+                    return $names[$code];
+                else
+                    return $code;
+            }
+
+            public function get_domain_by_url($url = '') {
+                $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
+                return $domain;
+            }
+
+            public function post($data = array(), $host = '', $timeout = 1) {
+                $ss = $this->get_settings();
+                $curl_user_agent = $ss['parser_user_agent'];
+                $fields_string = http_build_query($data);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $host);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+                if ($curl_user_agent) {
+                    curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
+                }
+
+                $result = curl_exec($ch);
+
+                return $result;
+            }
+
+            public function theme_table($data) {
+                $ret = '';
+                if (!empty($data)) {
+                    $ret .= '<table class="wp-list-table widefat striped table-view-list"><tr>';
+
+                    // Получение заголовков (названий полей) из первого объекта
+                    $firstObject = $data[0];
+                    foreach ($firstObject as $key => $value) {
+                        $ret .= "<th>$key</th>";
+                    }
+                    $ret .= "</tr>";
+
+                    // Вывод данных
+                    foreach ($data as $object) {
+                        $ret .= "<tr>";
+                        foreach ($object as $value) {
+                            $ret .= "<td>$value</td>";
+                        }
+                        $ret .= "</tr>";
+                    }
+
+                    $ret .= "</table>";
+                } else {
+                    $ret .= "Data not found.";
+                }
+                return $ret;
+            }
+
+            public function is_admin($cache = true) {
+                static $cached = null;
+
+                if ($cache) {
+                    if ($cached !== null) {
+                        return $cached;
+                    }
+                } else {
+                    $cached = null;
+                }
+
+                $is_admin = false;
+
+                // TODO: get admin role without wp core
+                if (function_exists('current_user_can')) {
+                    $is_admin = current_user_can("editor") || current_user_can("administrator");
+                }
+
+                if ($cache) {
+                    $cached = $is_admin;
+                }
+
+                return $is_admin;
+            }
+
+            public function get_avatars() {
+                $avatars = [];
+                $dir = ABSPATH . 'wp-content/uploads/avatars/custom/';
+
+                $files = scandir($dir);
+
+                foreach ($files as $val) {
+                    if ($val != '.' && $val != '..') {
+                        $regv = '#(\d+)\-(\d+)-128\.[jpgn]+#';
+                        if (preg_match($regv, $val, $mach)) {
+                            $avatars[$mach[2]][$mach[1]] = $val;
+                        }
+                    }
+                }
+                return $avatars;
+            }
+
+            public function create_slug($string, $glue = '-') {
+                $string = str_replace('&', ' and ', $string);
+                $string = preg_replace("/('|`)/", "", $string);
+
+                $table = array(
+                    'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
+                    'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+                    'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O',
+                    'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ý' => 'Y', 'Þ' => 'B', 'ß' => 'Ss',
+                    'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c', 'è' => 'e', 'é' => 'e',
+                    'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
+                    'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ü' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'ý' => 'y', 'þ' => 'b',
+                    'ÿ' => 'y', 'Ŕ' => 'R', 'ŕ' => 'r', '/' => '-', ' ' => '-'
+                );
+
+                // -- Remove duplicated spaces
+                $stripped = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', trim($string));
+
+                // -- Returns the slug
+                $slug = strtolower(strtr($stripped, $table));
+                $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
+
+                $slug = preg_replace('/^-/', '', $slug);
+                $slug = preg_replace('/-$/', '', $slug);
+
+                return $slug;
+            }
+
+            public function get_meta_compilation_link($id) {
+                $sql = sprintf("SELECT * FROM {$this->db['meta_compilation_links']} WHERE id=%d", (int) $id);
+                $result = $this->db_fetch_row($sql);
+                return $result;
+            }
         }
-        return $avatars;
-    }
-
-    public function create_slug($string, $glue = '-') {
-        $string = str_replace('&', ' and ', $string);
-        $string = preg_replace("/('|`)/", "", $string);
-
-        $table = array(
-            'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
-            'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
-            'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O',
-            'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ý' => 'Y', 'Þ' => 'B', 'ß' => 'Ss',
-            'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c', 'è' => 'e', 'é' => 'e',
-            'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
-            'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ü' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'ý' => 'y', 'þ' => 'b',
-            'ÿ' => 'y', 'Ŕ' => 'R', 'ŕ' => 'r', '/' => '-', ' ' => '-'
-        );
-
-        // -- Remove duplicated spaces
-        $stripped = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', trim($string));
-
-        // -- Returns the slug
-        $slug = strtolower(strtr($stripped, $table));
-        $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
-
-        $slug = preg_replace('/^-/', '', $slug);
-        $slug = preg_replace('/-$/', '', $slug);
-
-        return $slug;
-    }
-    
-    public function get_meta_compilation_link($id){
-        $sql = sprintf("SELECT * FROM {$this->db['meta_compilation_links']} WHERE id=%d", (int) $id);
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-}
+        

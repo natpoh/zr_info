@@ -11,12 +11,10 @@
  */
 class MoviesAbstractFunctions {
 
-    private $sync_data = false;
-    private $sync_client = false;
-    public function __construct() {
-        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;     
-        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;       
-    }
+    private $sync_data = DB_SYNC_DATA == 1 ? true : false;
+    private $sync_client = DB_SYNC_MODE == 2 ? true : false;
+    
+
     public function link_hash($link) {
         $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);

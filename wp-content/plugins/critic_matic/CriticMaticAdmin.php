@@ -2135,7 +2135,8 @@ class CriticMaticAdmin {
                 // Update
                 $campaign = $this->cp->get_campaign($cid);
                 $options = $this->cp->get_options($campaign);
-
+                global $db_debug;
+                $db_debug=1;
                 ob_start();
 
                 //Update URLs
@@ -2156,7 +2157,7 @@ class CriticMaticAdmin {
                 $active_arhive = $options['arhive']['status'];
                 $count_arhive = -1;
                 if ($active_arhive == 1) {
-                    $count_arhive = $cron->process_campaign($campaign, 'arhive_urls', true, true);
+                    $count_arhive = $cron->process_campaign($campaign, 'arhive', true, true);
                 }
 
                 // Parser

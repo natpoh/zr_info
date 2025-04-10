@@ -1768,7 +1768,7 @@ class CriticFront extends SearchFacets {
             $array_tsumb[] = $this->get_thumb_path_full($thumb[0], $thumb[1], $id, $add_time);
         }
         ?>
-        <div id="movie-<?php echo $id ?>" class="movie_container movie_block loadblock" data-id="<?php echo $id; ?>" data-func="movie_cache" data-replace=".movie_button_action,.movie_description" data-keys="<?php echo $add_time; ?>">
+        <div id="movie-<?php echo $id ?>" class="sitem movie_container movie_block loadblock" data-id="<?php echo $id; ?>" data-func="movie_cache" data-replace=".movie_button_action,.movie_description" data-keys="<?php echo $add_time; ?>">
             <div class="movie_poster">
                 <?php echo $link_before; ?>
                 <div class="image">
@@ -3993,7 +3993,7 @@ class CriticFront extends SearchFacets {
 
         ob_start();
         ?>
-        <div id="filter-<?php print $post->id ?>" class="card sitem card-filter" data-id="<?php print $post->id ?>">           
+        <div id="filter-<?php print $post->id ?>" class="card sitem card-item card-filter" data-id="<?php print $post->id ?>">           
             <div class="card-body">
                 <div class="card-top mb-4">
                     <?php if ($img) { ?>
@@ -4115,7 +4115,7 @@ class CriticFront extends SearchFacets {
             <?php } ?>            
             <div>
                 <div class="mb-3">                  
-                    <div class="sitem">
+                    <div class="sitem card-item">
                         <?php $this->theme_card_author($author_title, $post->aid, false); ?>
                     </div>                 
                     <small class="text-body-secondary"><?php print $critic_addtime ?></small>                                                
@@ -4396,7 +4396,7 @@ class CriticFront extends SearchFacets {
 
         ob_start();
         ?>
-        <div id="wlist-<?php print $post->id ?>" class="card sitem card-wlist" data-id="<?php print $post->id ?>">           
+        <div id="wlist-<?php print $post->id ?>" class="card sitem card-item card-wlist" data-id="<?php print $post->id ?>">           
             <div class="card-body">
                 <div class="wlist-image mb-3">                                                    
                     <a href="<?php print $link ?>">
@@ -4500,7 +4500,7 @@ class CriticFront extends SearchFacets {
             <h1 class="mb-4"><?php print $post->title ?></h1>                  
             <div>
                 <div class="mb-3">                  
-                    <div class="sitem">
+                    <div class="sitem card-item">
                         <?php $this->theme_card_author($author_title, $post->aid, false); ?>
                     </div>                 
                     <small class="text-body-secondary"><?php print $critic_addtime ?></small>                                                
@@ -4929,7 +4929,7 @@ class CriticFront extends SearchFacets {
 
         ob_start();
         ?>
-        <div id="review-<?php print $post->id ?>" class="card sitem card-review" data-id="<?php print $post->id ?>" data-atype="<?php print $post->author_type; ?>">           
+        <div id="review-<?php print $post->id ?>" class="card sitem card-item card-review" data-id="<?php print $post->id ?>" data-atype="<?php print $post->author_type; ?>">           
             <div class="card-body">
                 <div class="card-top mb-4">
                     <?php if ($show_movie && $post->top_movie && $post->mtitle) { ?>
