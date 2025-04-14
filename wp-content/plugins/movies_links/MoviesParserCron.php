@@ -2,7 +2,7 @@
 
 class MoviesParserCron extends MoviesAbstractDB {
 
-    private $max_cron_time = 20;
+    private $max_cron_time = 50;
     private $ml;
     private $mp;
     private $cron_types = array(
