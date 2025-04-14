@@ -30,73 +30,93 @@ class MoviesParserCron extends MoviesAbstractDB {
         if ($debug) {
             print_r($campaigns);
         }
+
+        $to_update = $this->check_time_campaign($campaigns, $cron_type, $debug, $force, $custom_url_id);
         $count = 0;
-        foreach ($campaigns as $campaign) {
-            $count += $this->check_time_campaign($campaign, $cron_type, $debug, $force, $custom_url_id);
+
+        if (!$to_update) {
+            return $count;
+        }
+        ksort($to_update);
+
+        foreach ($to_update as $campaign) {
+            // TODO Update
+            $options = $this->mp->get_options($campaign);
+            $currtime = $this->curr_time();
+            $type_name = isset($this->cron_types[$cron_type]) ? $this->cron_types[$cron_type] : '';
+
+            // Update timer
+            $options_upd = array();
+            $options_upd[$type_name]['last_update'] = $currtime;
+            $this->mp->update_campaign_options($campaign->id, $options_upd);
+
+            $count += $this->process_campaign($campaign, $options, $type_name, $debug, $force, $custom_url_id);
+
             $time = (int) $this->timer_stop(0);
             if ($time > $this->max_cron_time) {
                 break;
             }
         }
+
         return $count;
     }
 
-    public function check_time_campaign($campaign, $cron_type, $debug = false, $force = false, $custom_url_id = 0) {
-        $count = 0;
-        $options = $this->mp->get_options($campaign);
+    public function check_time_campaign($campaigns, $cron_type, $debug = false, $force = false, $custom_url_id = 0) {
 
-        $type_name = isset($this->cron_types[$cron_type]) ? $this->cron_types[$cron_type] : '';
+        $to_update = [];
+        foreach ($campaigns as $campaign) {
+            $count = 0;
+            $options = $this->mp->get_options($campaign);
 
-        if (!$type_name || !isset($options[$type_name])) {
-            if ($debug) {
-                print "Unknown type\n";
-            }
-            return $count;
-        }
+            $type_name = isset($this->cron_types[$cron_type]) ? $this->cron_types[$cron_type] : '';
 
-
-        // Find expired logic
-        if ($type_name == 'update') {
-            // Expired is active? 
-            $ao = $options['update'];
-            if ($ao['status'] == 0) {
+            if (!$type_name || !isset($options[$type_name])) {
                 if ($debug) {
-                    print "Status=0\n";
+                    print "Unknown type\n";
                 }
                 return $count;
             }
-        }
 
 
-        $type_opt = $options[$type_name];
-        $active = $type_opt['status'];
-
-        if ($active == 1 || $force) {
-            $update_interval = $type_opt['interval'];
-            $update_last_time = $type_opt['last_update'];
-
-            $next_update = $update_last_time + $update_interval * 60;
-            $currtime = $this->curr_time();
-
-            if ($currtime > $next_update || $force) {
-                // Update timer
-                $options_upd = array();
-                $options_upd[$type_name]['last_update'] = $currtime;
-                $this->mp->update_campaign_options($campaign->id, $options_upd);
-
-                $count = $this->process_campaign($campaign, $options, $type_name, $debug, $force, $custom_url_id);
-            } else {
-                if ($debug) {
-                    $wait = $next_update - $currtime;
-                    print "Wait: " . $wait;
+            // Find expired logic
+            if ($type_name == 'update') {
+                // Expired is active? 
+                $ao = $options['update'];
+                if ($ao['status'] == 0) {
+                    if ($debug) {
+                        print "Status=0\n";
+                    }
+                    return $count;
                 }
             }
-        } else {
-            if ($debug) {
-                print $type_name . " inactive: " . $active;
+
+
+            $type_opt = $options[$type_name];
+            $active = $type_opt['status'];
+
+            if ($active == 1) {
+                $update_interval = $type_opt['interval'];
+                $update_last_time = $type_opt['last_update'];
+
+                $next_update = $update_last_time + $update_interval * 60;
+                $currtime = $this->curr_time();
+
+                if ($currtime > $next_update || $force) {
+                    $to_update[$update_last_time] = $campaign;
+                } else {
+                    if ($debug) {
+                        $wait = $next_update - $currtime;
+                        print "Wait: " . $wait;
+                    }
+                }
+            } else {
+                if ($debug) {
+                    print $type_name . " inactive: " . $active;
+                }
             }
         }
-        return $count;
+
+        return $to_update;
     }
 
     public function process_campaign($campaign, $options, $type_name, $debug = false, $force = false, $custom_url_id = 0) {
