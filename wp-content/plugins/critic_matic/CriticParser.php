@@ -2380,9 +2380,15 @@ class CPCron {
             } else {
                 $last_update_all = isset($options[$type_name]['last_update_all']) ? $options[$type_name]['last_update_all'] : 0;
                 if ($last_update_all > 0) {
-                    $ret = $find->find_urls_yt($cid, $options, '', $preview);
+                    //$ret = $find->find_urls_yt($cid, $options, '', $preview);
+                    $client_id = base64_decode($options['yt_page']);
+                    $reg = '/<link [^>]*href="(https:\/\/www\.youtube\.com\/watch\?v=[^"]+)"/';
+                    $rss_url = 'https://www.youtube.com/feeds/videos.xml?channel_id=' . $client_id;
+                    $wait = 0;
+                    $ret = $find->parse_urls($cid, $reg, [$rss_url], $options, $wait, $preview);
+
                     if ($debug) {
-                        print "[$cid] Update last page. Last update all: $last_update_all\n";
+                        print "[$cid] Update last page by RSS\n";
                     }
                 } else {
                     $ret = $find->find_all_urls_yt($campaign, false);

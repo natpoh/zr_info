@@ -2091,8 +2091,15 @@ class CriticMaticAdmin {
 
                 $yt_preivew = array();
                 if (isset($_POST['yt_preview'])) {
-                    $find = new CPFind($this->cp);
-                    $yt_preivew = $find->find_all_urls_yt($campaign, true);
+                    
+                    $playlists = $options['yt_playlists'] ?? array();
+                    if ($playlists){
+                        $find = new CPFind($this->cp);
+                        $yt_preivew = $find->find_all_urls_yt($campaign, true);
+                    } else {
+                        $cron = new CPCron($this->cp);
+                        $yt_preivew = $cron->cron_urls($campaign, true);
+                    }
                 }
 
                 $preivew_data = array();
