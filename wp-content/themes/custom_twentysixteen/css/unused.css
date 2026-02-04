@@ -1,0 +1,40 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 12 мар. 2024 г., 14:45:00
+    Author     : brahman
+*/
+
+/*
+BG template
+*/
+.a_msg_i.witch_bg .bg_holder{
+     backdrop-filter: blur(3px);
+     color: #000;     
+     background:rgba(255,255,255,0.5);
+     margin: -9px;
+     padding: 10px;
+     text-shadow: 0 0 3px rgb(255 255 255 / 70%);
+}
+
+.a_msg_i.witch_bg .review_bottom {
+    margin-bottom: -3px;
+    color: #000;  
+    text-shadow: 0 0 3px rgb(255 255 255 / 70%);
+}
+
+.theme_dark .a_msg_i.witch_bg .bg_holder {
+    text-shadow: 0 0 3px rgb(0 0 0 / 70%);
+    background:rgba(0,0,0,0.5);
+}
+
+.theme_dark  .a_msg_i.witch_bg .review_bottom {
+    color: #FFF; 
+     text-shadow: 0 0 3px rgb(0 0 0 / 70%);
+}
+
+body.theme_dark .a_msg_i.witch_bg .sfilter-item, body.theme_dark .a_msg_i.witch_bg .sfilter-title a {
+    color: #FFF;
+}

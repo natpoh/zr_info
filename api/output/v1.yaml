@@ -1,0 +1,774 @@
+openapi: 3.0.0
+info:
+  title: 'FilmDemographics API'
+  description: ''
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: 'Apache 2.0'
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  version: 1.0.0
+servers:
+  -
+    url: 'https://api.filmdemographics.com/v1'
+    description: 'FilmDemographics API Mocking'
+paths:
+  '/media/{mediaId}':
+    get:
+      tags:
+        - media
+      description: 'Returns a media object.'
+      operationId: getMediaById
+      parameters:
+        -
+          name: mediaId
+          in: path
+          description: 'ID of media that needs to be fetched'
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 21055
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '401':
+          description: Unauthorized
+        '404':
+          description: 'Media not found'
+      security:
+        -
+          api_key: []
+  '/media/{mediaId}/cast':
+    get:
+      tags:
+        - media
+      description: 'Returns list of cast objects.'
+      operationId: getMediaCast
+      parameters:
+        -
+          name: mediaId
+          in: path
+          description: 'ID of media that needs to be fetched'
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 21055
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cast'
+        '401':
+          description: Unauthorized
+        '404':
+          description: 'Media not found'
+      security:
+        -
+          api_key: []
+  '/media/{mediaId}/rating':
+    get:
+      tags:
+        - media
+      description: 'Returns list of rating objects.'
+      operationId: getMediaRating
+      parameters:
+        -
+          name: mediaId
+          in: path
+          description: 'ID of media that needs to be fetched'
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 21055
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rating'
+        '401':
+          description: Unauthorized
+        '404':
+          description: 'Media not found'
+      security:
+        -
+          api_key: []
+  /search:
+    get:
+      tags:
+        - search
+      summary: 'Returns media objects'
+      description: 'Returns a map of media objects'
+      operationId: searchMedia
+      parameters:
+        -
+          name: s
+          in: query
+          description: 'Search string (e.g., ''Matrix''). Type to find media by title and release year'
+          required: false
+          schema:
+            type: string
+        -
+          name: kmwoke
+          in: query
+          description: 'Filter items by specific keywords related to woke themes. Accepts args:''woke,lgbt,lgb,qtia''. Use a comma-separated list for multiple keywords (e.g., ''woke,lgbt'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-kmwoke
+          in: query
+          description: 'Exclude items by specific keywords related to woke themes. Accepts args:''woke,lgbt,lgb,qtia''. Use a comma-separated list for multiple keywords (e.g., ''woke,lgbt'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: woke
+          in: query
+          description: 'Woke rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-woke
+          in: query
+          description: 'Exclude items with a certain woke rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: lgbt
+          in: query
+          description: 'LGBT rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-lgbt
+          in: query
+          description: 'Exclude items with a certain LGBT rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: lgb
+          in: query
+          description: 'LGB rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-lgb
+          in: query
+          description: 'Exclude items with a certain LGB rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: qtia
+          in: query
+          description: 'QTIA rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-qtia
+          in: query
+          description: 'Exclude items with a certain QTIA rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: rating
+          in: query
+          description: 'Family Friendly Score filter. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-rating
+          in: query
+          description: 'Exclude items with a certain Family Friendly Score rating. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: rmedia
+          in: query
+          description: 'MediaVersity filter. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-rmedia
+          in: query
+          description: 'Exclude items with a certain MediaVersity rating. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: mediaversity
+          in: query
+          description: 'MediaVersity A-F filter. Accepts args:''a,b,c,d,f''. Use a comma-separated list for multiple keywords (e.g., ''a,b'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-mediaversity
+          in: query
+          description: 'Exclude items by specific keywords related to MediaVersity A-F themes. Accepts args:''a,b,c,d,f''. Use a comma-separated list for multiple keywords (e.g., ''a,b'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: rcherry
+          in: query
+          description: 'CherryPicks filter. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-rcherry
+          in: query
+          description: 'Exclude items with a certain CherryPicks rating. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: wokeornot
+          in: query
+          description: 'WokerNot filter. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-wokeornot
+          in: query
+          description: 'Exclude items with a certain WokerNot rating. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: bechdeltest
+          in: query
+          description: 'BechdelTest filter. Accepts args:''nowomen,notalk,talk,pass''. Use a comma-separated list for multiple keywords (e.g., ''talk,pass'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-bechdeltest
+          in: query
+          description: 'Exclude items by specific keywords related to BechdelTest themes. Accepts args:''nowomen,notalk,talk,pass''. Use a comma-separated list for multiple keywords (e.g., ''talk,pass'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: worthit
+          in: query
+          description: 'WorthItOrWoke filter. Accepts args:''worthit,nonwoke,wokeish,woke''. Use a comma-separated list for multiple keywords (e.g., ''wokeish,woke'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-worthit
+          in: query
+          description: 'Exclude items by specific keywords related to WorthItOrWoke themes. Accepts args:''worthit,nonwoke,wokeish,woke''. Use a comma-separated list for multiple keywords (e.g., ''wokeish,woke'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: auvote
+          in: query
+          description: 'Audience Warnings Suggestion filter. Accepts args:''pay,free,skip''. Use a comma-separated list for multiple keywords (e.g., ''pay,free'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-auvote
+          in: query
+          description: 'Exclude items by specific keywords related to Audience Warnings Suggestion themes. Accepts args:''pay,free,skip''. Use a comma-separated list for multiple keywords (e.g., ''pay,free'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: auneo
+          in: query
+          description: 'Audience Warnings NEO-MARXISM filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-auneo
+          in: query
+          description: 'Exclude items with a certain Audience NEO-MARXISM rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: aumisandry
+          in: query
+          description: 'Audience Warnings FEMINISM filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-aumisandry
+          in: query
+          description: 'Exclude items with a certain Audience FEMINISM rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: auaffirmative
+          in: query
+          description: 'Audience Warnings AFFIRMATIVE ACTION filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-auaffirmative
+          in: query
+          description: 'Exclude items with a certain Audience AFFIRMATIVE ACTION rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: aulgbtq
+          in: query
+          description: 'Audience Warnings GAY STUFF filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-aulgbtq
+          in: query
+          description: 'Exclude items with a certain Audience GAY STUFF rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: augod
+          in: query
+          description: 'Audience Warnings FEDORA TIPPING filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-augod
+          in: query
+          description: 'Exclude items with a certain Audience FEDORA TIPPING rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: p
+          in: query
+          description: 'Page number'
+          required: false
+          schema:
+            type: integer
+            format: int32
+          example: 1
+        -
+          name: pp
+          in: query
+          description: 'Number of results per page: 1-50'
+          required: false
+          schema:
+            type: integer
+            format: int32
+          example: 20
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                properties:
+                  currentPage: { type: integer, example: 1 }
+                  totalPages: { type: integer, example: 5 }
+                  totalCount: { type: integer, example: 100 }
+                  data: { type: array, items: { $ref: '#/components/schemas/Media' } }
+                type: object
+        '404':
+          description: 'Media not found'
+        '401':
+          description: Unauthorized
+      security:
+        -
+          api_key: []
+  /string_uri:
+    get:
+      tags:
+        - string_uri
+      summary: 'Returns media objects'
+      description: 'Returns a map of media objects'
+      operationId: getMediaBystrURI
+      parameters:
+        -
+          name: strURI
+          in: query
+          description: 'Type to find media by string request'
+          required: false
+          schema:
+            type: string
+          example: /search/show_ratings_rrwt/type_movies/rrwt_70-100
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: 'Media not found'
+        '405':
+          description: 'Invalid input'
+      security:
+        -
+          api_key: []
+  /string_uri/chart:
+    get:
+      tags:
+        - string_uri
+      summary: 'Returns media objects'
+      description: 'Returns a map of media objects'
+      operationId: getChartDataBystrURI
+      parameters:
+        -
+          name: strURI
+          in: query
+          description: 'Type to find media by string request'
+          required: true
+          schema:
+            type: string
+          example: /analytics/tab_ethnicity/release_2020-2030/type_movies/vis_scatter/xaxis_rimdb/yaxis_release/showcast_1
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: 'Media not found'
+        '405':
+          description: 'Invalid input'
+      security:
+        -
+          api_key: []
+  /string_uri/facets:
+    get:
+      tags:
+        - string_uri
+      summary: 'Returns media objects'
+      description: 'Returns a map of media objects'
+      operationId: getFacetsBystrURI
+      parameters:
+        -
+          name: strURI
+          in: query
+          description: 'Type to find media by string request'
+          required: false
+          schema:
+            type: string
+          example: /search/show_ratings_rrwt/type_movies/rrwt_70-100
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: 'Media not found'
+        '405':
+          description: 'Invalid input'
+      security:
+        -
+          api_key: []
+components:
+  schemas:
+    Cast:
+      title: 'Cast model'
+      description: 'Cast model'
+      properties:
+        id:
+          title: 'Cast ID'
+          type: integer
+          format: int64
+          default: 0
+          example: 206
+        name:
+          title: 'Cast name'
+          type: string
+          default: ''
+          example: 'Keanu Reeves'
+        birth_name:
+          title: 'Birth name'
+          type: string
+          default: ''
+          example: 'Keanu Charles Reeves'
+        birth_place:
+          title: 'Birth place'
+          type: string
+          default: ''
+          example: 'Beirut, Lebanon'
+        burn_date:
+          title: 'Burn date'
+          type: string
+          default: ''
+          example: '1964-9-2'
+        type:
+          title: 'Cast type'
+          type: string
+          default: ''
+          enum:
+            - all
+            - stars
+            - supporting
+          example: stars
+        race:
+          title: 'Cast race'
+          type: string
+          default: ''
+          enum:
+            - White
+            - Asian
+            - Latino
+            - Black
+            - Indian
+            - Arab
+            - 'Mixed / Other'
+            - Jewish
+          example: White
+        race_id:
+          type: integer
+          format: int64
+          default: 0
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+          example: 1
+        gender:
+          title: 'Cast gender'
+          type: string
+          default: ''
+          enum:
+            - Male
+            - Female
+          example: Male
+      type: object
+    CastName:
+      title: 'CastName model'
+      description: 'CastName model'
+      properties:
+        id:
+          title: 'Cast ID'
+          type: integer
+          format: int64
+          default: 0
+          example: 206
+        name:
+          title: 'Cast name'
+          type: string
+          default: ''
+          example: 'Keanu Reeves'
+      type: object
+    Demographic:
+      title: 'Demographic model'
+      description: 'Demographic model'
+      properties:
+        race:
+          title: 'Cast race'
+          type: string
+          default: ''
+          example: White
+        race_id:
+          type: integer
+          format: int64
+          default: 0
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+          example: 1
+        percent:
+          title: Percent
+          type: integer
+          format: int64
+          default: 0
+          example: 100
+      type: object
+    Gender:
+      title: 'Gender model'
+      description: 'Gender model'
+      properties:
+        gender:
+          title: 'Cast gender'
+          type: string
+          default: ''
+          example: Male
+        percent:
+          title: Percent
+          type: integer
+          format: int64
+          default: 0
+          example: 100
+      type: object
+    Media:
+      title: 'Media model'
+      description: 'Media model'
+      properties:
+        id:
+          title: ID
+          description: ID
+          type: integer
+          format: int64
+          default: 0
+          example: 21055
+        type:
+          title: Type.
+          description: Type.
+          type: string
+          default: ''
+          enum:
+            - Movie
+            - TVSeries
+            - VideoGame
+          example: Movie
+        title:
+          title: Title
+          description: Title
+          type: string
+          default: ''
+          example: 'The Matrix'
+        year:
+          title: Year
+          description: Year
+          type: integer
+          format: in32
+          default: 0
+          example: 1999
+        release:
+          title: 'Release date'
+          description: 'Release date'
+          type: string
+          default: ''
+          example: '1999-03-31'
+        imdb_id:
+          title: 'IMDB ID'
+          description: 'IMDB ID'
+          type: string
+          default: ''
+          example: tt0133093
+        cast_stars:
+          title: 'Cast stars'
+          description: 'Cast stars list'
+          properties:
+            cast:
+              type: array
+              items:
+                $ref: '#/components/schemas/CastName'
+            demographic:
+              type: array
+              items:
+                $ref: '#/components/schemas/Demographic'
+          type: object
+        cast_stupporting:
+          title: 'Cast stupporting'
+          description: 'Cast supporting list'
+          properties:
+            cast:
+              type: array
+              items:
+                $ref: '#/components/schemas/CastName'
+            demographic:
+              type: array
+              items:
+                $ref: '#/components/schemas/Demographic'
+          type: object
+        cast_all:
+          title: Cast
+          description: 'Cast all list'
+          properties:
+            cast:
+              type: array
+              items:
+                $ref: '#/components/schemas/CastName'
+            gender:
+              type: array
+              items:
+                $ref: '#/components/schemas/Gender'
+            demographic:
+              type: array
+              items:
+                $ref: '#/components/schemas/Demographic'
+          type: object
+      type: object
+    Rating:
+      title: 'Rating model'
+      description: 'Rating model'
+      properties:
+        id:
+          title: 'Rating ID'
+          description: 'Rating ID'
+          type: string
+          default: ''
+          example: rimdb
+        title:
+          title: Title
+          description: Title
+          type: string
+          default: ''
+          example: IMDb
+        value:
+          title: Value
+          type: number
+          format: float
+          default: 0
+          example: 9.8
+      type: object
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: query
+tags:
+  -
+    name: search
+    description: 'Find media by titles'
+  -
+    name: media
+    description: 'Get media info'
+  -
+    name: string_uri
+    description: 'Get media by string request'

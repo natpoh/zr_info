@@ -1,0 +1,161 @@
+.wp-list-table  .rating_input .rating_result {
+    display: inline-block;
+    left: 0;
+    width: 100%;
+    float: none;
+    position: relative;
+    max-width: 380px;
+}
+.wp-list-table  .rating_result {
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/star.svg") repeat-x;
+    display: inline-block;
+    height: auto;
+    background-size: 20%;
+    padding-top: 14%;
+    position: relative;
+    width: 60%;
+    top: 0;
+    left: 0%;
+}
+.rating_result.pay_to_watch {
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/verdict_pay.svg") no-repeat;
+    display: inline-block;
+    height: auto;
+    background-size: 40%;
+    padding-top: 15%;
+    color: #1c9202;
+}
+.rating_result.skip_it {
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/verdict_skip.svg") no-repeat;
+    display: inline-block;
+    height: auto;
+    background-size: 40%;
+    padding-top: 15%;
+    color: #e40000;
+}
+.rating_result.watch_if_free {
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/verdict_free.svg") no-repeat;
+    display: inline-block;
+    height: auto;
+    background-size: 40%;
+    padding-top: 15%;
+    color: #ff6f00;
+}
+
+.verdict_text{
+    position: absolute;
+    top: 0px;
+    width: 60%;
+    font-size: 16px;
+    font-family: 'Encode Sans Condensed',Lato;
+    font-weight: bold;
+    left: 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.rating_result_total {
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/star_active.svg") repeat-x;
+    background-size: auto;
+    display: block;
+    height: auto;
+    background-size: 20%;
+    padding-top: 20%;
+    position: absolute;
+    top: 0px;
+}
+
+.rating_result.hollywood{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/overal.svg") repeat-x;
+    background-size: 20%;
+
+}
+
+.rating_result.hollywood .rating_result_total{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/overal_active.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.patriotism{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/neo.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.patriotism .rating_result_total{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/neo_active.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.misandry{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/miss.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.misandry .rating_result_total{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/miss_active.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.affirmative{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/affirmate.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.affirmative .rating_result_total{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/affirmate_active.svg") repeat-x;
+    background-size: 20%;
+}
+
+
+.rating_result.lgbtq{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/lgbt.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.lgbtq .rating_result_total{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/lgbt_active.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.god{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/good.svg") repeat-x;
+    background-size: 20%;
+}
+
+.rating_result.god .rating_result_total{
+    background: transparent url("../../../themes/custom_twentysixteen/images/rating/good_active.svg") repeat-x;
+    background-size: 20%;
+}
+.wp-list-table .rating_inner_row .rating_title {
+    text-transform: uppercase;
+    font-size: 15px;
+    width: 40%;
+    display: flex;
+    font-style: italic;
+    text-align: center;
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    line-height: 16px;
+    font-family: 'Encode Sans Condensed',Lato;
+    min-width: 100px;
+}
+.rating_inner_row{
+    display: flex;
+}
+
+
+
+.sug_buttons_wrapper .options li:hover{
+
+    background-position-y: -46px;
+}
+.sug_buttons_wrapper .options li.selected {
+    background-position-y: -92px;
+
+}

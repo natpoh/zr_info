@@ -1,0 +1,7 @@
+{
+    "autoload": {
+        "psr-4": {
+            "OpenApi\\Fd\\": "src/v1"
+        }
+    }
+}

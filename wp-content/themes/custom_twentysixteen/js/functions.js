@@ -1,0 +1,189 @@
+/* global screenReaderText */
+/**
+ * Theme functions file.
+ *
+ * Contains handlers for navigation and widget area.
+ */
+
+( function( $ ) {
+	var body, masthead, menuToggle, siteNavigation, socialNavigation, siteHeaderMenu, resizeTimer;
+
+	function initMainNavigation( container ) {
+
+
+
+		// Add dropdown toggle that displays child menu items.
+		var Toggleback ='<li class="back-button">Back</li>';
+
+
+		container.find('.menu-item-has-children>a').each(function () {
+
+			var src = $(this).attr('href');
+			var title =$(this).html();
+			$(this).find('.nav_icon_b').remove();
+
+			var current_cat='<li class="main_page_link"><a href="'+src+'">'+title+'</a></li>';
+
+
+			var featured_link = $(this).next('.featured_link');
+			if (featured_link)
+			{
+				$(this).next('.featured_link').remove();
+			}
+			//console.log();
+
+			var nextcontainer = $(this).next('ul.sub-menu');
+			nextcontainer.prepend(current_cat);
+			nextcontainer.find('.main_page_link .nav_icon_w').remove();
+			if (featured_link.html()) {
+				nextcontainer.append('<li class="featured_link_contaner">'+featured_link.html()+'</li>');
+			}
+		});
+
+		container.find( '.menu-item-has-children > ul' ).prepend( Toggleback );
+
+		// Add menu items with submenus to aria-haspopup="true".
+		container.find( '.menu-item-has-children' ).attr( 'aria-haspopup', 'true' );
+
+		container.find( '.menu-item-has-children > a'  ).click( function( e ) {
+			var _this            = $( this );
+
+
+			//if ($('body').hasClass('menu-open'))
+			{
+				///screenReaderSpan = _this.find( '.screen-reader-text' );
+
+				e.preventDefault();
+				_this.toggleClass('toggled-on');
+				_this.next('.children, .sub-menu').toggleClass('toggled-on');
+
+				// jscs:disable
+				_this.attr('aria-expanded', _this.attr('aria-expanded') === 'false' ? 'true' : 'false');
+				// jscs:enable
+				///	screenReaderSpan.text( screenReaderSpan.text() === screenReaderText.expand ? screenReaderText.collapse : screenReaderText.expand );
+				return false;
+
+			}
+		} );
+
+		container.find( '.menu-item-has-children  .back-button'  ).click( function( e ) {
+			e.preventDefault();
+			var parent = $(this).parent('ul.sub-menu.toggled-on');
+			parent.prev('a').click();
+
+
+		});
+
+
+	}
+
+	initMainNavigation( $( '.main-navigation' ) );
+
+
+
+
+	masthead         = $( '#masthead' );
+	menuToggle       = masthead.find( '#menu-toggle' );
+	siteHeaderMenu   = masthead.find( '#site-header-menu' );
+	siteNavigation   = masthead.find( '#site-navigation' );
+	socialNavigation = masthead.find( '#social-navigation' );
+
+	// Enable menuToggle.
+	( function() {
+
+		// Return early if menuToggle is missing.
+		if ( ! menuToggle.length ) {
+			return;
+		}
+
+		// Add an initial values for the attribute.
+		menuToggle.add( siteNavigation ).add( socialNavigation ).attr( 'aria-expanded', 'false' );
+
+		menuToggle.on( 'click.twentysixteen', function() {
+			$( this ).add( siteHeaderMenu ).toggleClass( 'toggled-on' );
+
+			// jscs:disable
+			$( this ).add( siteNavigation ).add( socialNavigation ).attr( 'aria-expanded', $( this ).add( siteNavigation ).add( socialNavigation ).attr( 'aria-expanded' ) === 'false' ? 'true' : 'false' );
+			// jscs:enable
+		} );
+	} )();
+
+	// Fix sub-menus for touch devices and better focus for hidden submenu items for accessibility.
+	( function() {
+		if ( ! siteNavigation.length || ! siteNavigation.children().length ) {
+			return;
+		}
+
+		// Toggle `focus` class to allow submenu access on tablets.
+		function toggleFocusClassTouchScreen() {
+			if ( window.innerWidth >= 910 ) {
+				$( document.body ).on( 'touchstart.twentysixteen', function( e ) {
+					if ( ! $( e.target ).closest( '.main-navigation li' ).length ) {
+						$( '.main-navigation li' ).removeClass( 'focus' );
+					}
+				} );
+				siteNavigation.find( '.menu-item-has-children > a' ).on( 'touchstart.twentysixteen', function( e ) {
+					var el = $( this ).parent( 'li' );
+
+					if ( ! el.hasClass( 'focus' ) ) {
+						e.preventDefault();
+						el.toggleClass( 'focus' );
+						el.siblings( '.focus' ).removeClass( 'focus' );
+					}
+				} );
+			} else {
+				siteNavigation.find( '.menu-item-has-children > a' ).unbind( 'touchstart.twentysixteen' );
+			}
+		}
+
+		if ( 'ontouchstart' in window ) {
+			$( window ).on( 'resize.twentysixteen', toggleFocusClassTouchScreen );
+			toggleFocusClassTouchScreen();
+		}
+
+		siteNavigation.find( 'a' ).on( 'focus.twentysixteen blur.twentysixteen', function() {
+			$( this ).parents( '.menu-item' ).toggleClass( 'focus' );
+		} );
+	} )();
+
+	// Add the default ARIA attributes for the menu toggle and the navigations.
+	function onResizeARIA() {
+		if ( window.innerWidth < 910 )
+		{
+			if ( menuToggle.hasClass( 'toggled-on' ) ) {
+				menuToggle.attr( 'aria-expanded', 'true' );
+			} else {
+				menuToggle.attr( 'aria-expanded', 'false' );
+			}
+
+			if ( siteHeaderMenu.hasClass( 'toggled-on' ) ) {
+				siteNavigation.attr( 'aria-expanded', 'true' );
+				socialNavigation.attr( 'aria-expanded', 'true' );
+			} else {
+				siteNavigation.attr( 'aria-expanded', 'false' );
+				socialNavigation.attr( 'aria-expanded', 'false' );
+			}
+
+			menuToggle.attr( 'aria-controls', 'site-navigation social-navigation' );
+		} else {
+			menuToggle.removeAttr( 'aria-expanded' );
+			siteNavigation.removeAttr( 'aria-expanded' );
+			socialNavigation.removeAttr( 'aria-expanded' );
+			menuToggle.removeAttr( 'aria-controls' );
+		}
+	}
+
+
+	$( document ).ready( function() {
+		body = $( document.body );
+
+		$( window )
+			.on( 'load.twentysixteen', onResizeARIA )
+			.on( 'resize.twentysixteen', function() {
+				clearTimeout( resizeTimer );
+				resizeTimer = setTimeout( function() {}, 300 );
+				onResizeARIA();
+			} );
+
+	} );
+} )( jQuery );

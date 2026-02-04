@@ -1,0 +1,174 @@
+.cm-filters {
+    float: none;
+}
+
+.cm-filters.inline{
+    margin: 0;
+    padding: 0;
+
+}
+
+.cm-filters.inline li, .cm-filters.inline a  {
+    line-height: 1rem;
+}
+
+.table-view-list .green, 
+.table-view-list .green a{
+    color: green;
+}
+
+.table-view-list .red,
+.table-view-list .red a{
+    color: #FF6D6D;
+}
+
+
+.table-view-list .rule_m, .table-view-list .rule_k {
+    width: 100%;
+}
+
+.table-view-list .rule_w{
+    max-width: 50px;
+}
+
+.table-view-list .flex-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.table-view-list .flex-column {
+    margin: 0 10px 0 0;    
+}
+
+.cmnav .tablenav-pages .pagination-links .button {
+    margin-right: 5px;
+}
+
+.cm-edit.inline-edit-row{
+    width: 90%;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.cm-nav {
+    margin-bottom: 1rem;
+}
+
+.table-view-list .vote {
+    width: 300px;
+}
+.table-view-list .vote img {
+    max-width: 100%;
+    height: auto;
+}
+
+#spform {
+    margin: 0;    
+    position: relative;
+    max-width: 600px;    
+}
+
+#spform input {
+    font-size: 1rem;
+}
+#spform #sbar {
+    border: 1px solid #646464;
+    width: 100%;
+    padding-right: 110px;  
+}
+
+#spform #submit {
+    position: absolute;
+    margin: 0;
+    right: 0;
+    top: 0;    
+    height: 100%;
+    width: 100px;
+}
+
+#spform #submit:hover {
+    background: silver;
+}
+
+.autocomplite .search_results{
+    padding: 5px;
+    border: 1px solid #ddd;
+    background: #fff;
+    display: none;
+}
+
+.autocomplite .search_results.show {
+    display: block;
+}
+
+.autocomplite .search_results .result {
+    padding: 5px;
+    display: block;
+    cursor: pointer;
+}
+
+.bulk-actions-holder {
+    margin: 1rem 0 0.5rem 0;
+} 
+
+.table-view-list .content-preview {
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+.author-autocomplite {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+.author-autocomplite .search_results.show {
+    position: absolute;
+}
+
+.cm-type--1 .campaing-options {
+    display: none;
+}
+
+.cm-type-0 .find-channel-id,
+.cm-type-0 .channel-id{
+    display: none;
+}
+
+.cm-type-1 .step-2 {
+    display: none;
+}
+
+.cm-type-1.yt_channel_valid .step-2{
+    display: block;
+}
+
+td.nowrap {
+    white-space: nowrap;
+}
+
+td.wrap {    
+    word-break: break-word;    
+}
+
+i.sticn {
+    width: 10px;
+    height: 10px;
+    background: #ddd;
+    display: inline-block;
+    margin-right: 5px;
+    border-radius: 50%;
+}
+
+i.sticn.st-1{
+    background: #4bc94b;
+}
+i.sticn.st-2, i.sticn.st-3{
+    background: #FFAD17;
+}
+
+i.sticn.st-4{
+    background: #99CCFF;
+}
+i.sticn.st-5{
+    background: #d75454;
+}

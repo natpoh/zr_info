@@ -1,0 +1,202 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 17.11.2022, 13:22:49
+    Author     : brahman
+*/
+
+.hidden, .js .closed .inside, .js .hide-if-js, .js .wp-core-ui .hide-if-js, .js.wp-core-ui .hide-if-js, .no-js .hide-if-no-js, .no-js .wp-core-ui .hide-if-no-js, .no-js.wp-core-ui .hide-if-no-js {
+    display: none;
+}
+
+.wp-generate-pw {
+    margin-bottom: 0.5em;
+}
+
+
+#misc-publishing-actions label {
+    vertical-align: baseline;
+}
+
+#pass-strength-result {
+    background-color: #f0f0f1;
+    border: 1px solid #dcdcde;
+    color: #1d2327;
+    margin: -1px 0px 5px;
+    padding: 3px 5px;
+    text-align: center;
+    width: 25em;
+    box-sizing: border-box;
+    opacity: 0;
+}
+
+#pass-strength-result.short {
+    background-color: #ffabaf;
+    border-color: #e65054;
+    opacity: 1;
+}
+
+#pass-strength-result.bad {
+    background-color: #facfd2;
+    border-color: #f86368;
+    opacity: 1;
+}
+
+#pass-strength-result.good {
+    background-color: #f5e6ab;
+    border-color: #f0c33c;
+    opacity: 1;
+}
+
+#pass-strength-result.strong {
+    background-color: #b8e6bf;
+    border-color: #68de7c;
+    opacity: 1;
+}
+
+.password-input-wrapper input {
+    font-family: Consolas, Monaco, monospace;
+}
+
+#pass1.short, #pass1-text.short {
+    border-color: #e65054;
+}
+
+#pass1.bad, #pass1-text.bad {
+    border-color: #f86368;
+}
+
+#pass1.good, #pass1-text.good {
+    border-color: #f0c33c;
+}
+
+#pass1.strong, #pass1-text.strong {
+    border-color: #68de7c;
+}
+
+.pw-weak {
+    display: none;
+}
+
+.indicator-hint {
+    padding-top: 8px;
+}
+
+.wp-pwd [type="text"],
+.wp-pwd [type="password"] {
+    margin-bottom: 0;
+    /* Same height as the buttons */
+    min-height: 30px;
+}
+
+/* Hide the Edge "reveal password" native button */
+.wp-pwd input::-ms-reveal {
+    display: none;
+}
+
+#pass1-text,
+.show-password #pass1 {
+    display: none;
+}
+
+#pass1-text::-ms-clear {
+    display: none;
+}
+
+.show-password #pass1-text {
+    display: inline-block;
+}
+
+
+
+
+
+
+/* New Password */
+.wp-pwd {
+    position: relative;
+}
+
+/* Needs higher specificity than normal input type text and password. */
+#profile-page .form-table #pass1 {
+    padding-right: 90px;
+}
+
+.wp-pwd button.button {
+    background: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
+    line-height: 2;
+    margin: 0;
+    padding: 5px 9px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 2.375rem;
+    height: 2.375rem;
+    min-width: 44px;
+    min-height: 40px;
+    color: #3c78a7;
+}
+
+.theme_dark .wp-pwd button.button {
+    color: #a9a9a9;   
+}
+
+.wp-pwd button.wp-hide-pw {
+    right: 2.5rem;
+}
+
+body.user-new-php .wp-pwd button.wp-hide-pw {
+    right: 0;
+}
+
+.wp-pwd button.button:hover,
+.wp-pwd button.button:focus {
+    background: transparent;
+}
+
+.wp-pwd button.button:active {
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
+
+.wp-pwd .button .text {
+    display: none;
+}
+
+.wp-pwd [type="text"],
+.wp-pwd [type="password"] {
+    padding-right: 5rem;
+}
+
+body.user-new-php .wp-pwd [type="text"],
+body.user-new-php .wp-pwd [type="password"] {
+    padding-right: 2.5rem;
+}
+
+.wp-cancel-pw .dashicons-no {
+    display: inline-block;
+}
+
+.options-general-php input[type="text"].small-text {
+    max-width: 6.25em;
+    margin: 0;
+}
+
+
+.dashicons, .dashicons-before:before {
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+}
+
+#pass-strength-result {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+}

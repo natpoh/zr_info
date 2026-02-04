@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="160"
+   height="65"
+   viewBox="0 0 42.333332 17.197917"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="logo_r.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:zoom="3.3360996"
+     inkscape:cx="75.837064"
+     inkscape:cy="70.891168"
+     inkscape:window-width="1600"
+     inkscape:window-height="847"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <marker
+       id="DistanceX"
+       orient="auto"
+       refX="0"
+       refY="0"
+       style="overflow:visible">
+      <path
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         style="stroke:#000000;stroke-width:0.5"
+         id="path826" />
+    </marker>
+    <pattern
+       id="Hatch"
+       patternUnits="userSpaceOnUse"
+       width="8"
+       height="8"
+       x="0"
+       y="0">
+      <path
+         d="M8 4 l-4,4"
+         stroke="#000000"
+         stroke-width="0.25"
+         linecap="square"
+         id="path829" />
+      <path
+         d="M6 2 l-4,4"
+         stroke="#000000"
+         stroke-width="0.25"
+         linecap="square"
+         id="path831" />
+      <path
+         d="M4 0 l-4,4"
+         stroke="#000000"
+         stroke-width="0.25"
+         linecap="square"
+         id="path833" />
+    </pattern>
+    <pattern
+       id="EMFhbasepattern"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+    <pattern
+       id="EMFhbasepattern-3"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+    <pattern
+       id="EMFhbasepattern-5"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+    <pattern
+       id="EMFhbasepattern-0"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+  </defs>
+  <g
+     inkscape:label="Слой 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g854"
+       transform="scale(0.26458333)">
+      <g
+         inkscape:label="Âåêòîðíûé ñëîé 1"
+         id="g838" />
+      <g
+         inkscape:label="0"
+         id="g840" />
+    </g>
+    <path
+       id="path1466"
+       style="fill:#721ede;fill-opacity:1;stroke:none;stroke-width:0.0889353px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 22.856443,0.41977572 c 1.156162,0.71148478 0.62255,2.31232378 0.533613,3.37955018 l -0.622548,2.4012598 -1.42297,-2.8459375 0.533614,-1.8676457 c 0.08893,-0.53361311 0.355743,-1.15616278 0.978291,-1.06722678 m 0.355743,-0.2668067 C 22.32283,-0.38064407 21.611345,0.59764719 21.52241,1.3091315 l -0.62255,2.0455167 c 0,0 0,0.08893 0,0.08893 l 1.689776,3.3795512 c 0,0 0,0 0,0.08893 l 1.511906,2.6680645 c 0.08893,0.2668067 0.444678,0.08893 0.355742,-0.177871 l -1.42297,-2.5791295 2.934874,-2.5791305 c 0.177872,-0.08893 -0.08893,-0.444678 -0.266806,-0.266809 L 23.123251,6.1116377 23.745799,3.8882499 C 24.012605,2.7320855 24.368348,0.95337569 23.212186,0.15295542" />
+  </g>
+</svg>

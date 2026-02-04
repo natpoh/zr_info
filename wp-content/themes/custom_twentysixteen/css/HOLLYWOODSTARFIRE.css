@@ -1,0 +1,10 @@
+.column_header, .page-title  {
+    font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
+}
+
+@font-face {
+    font-family: "HOLLYWOODSTARFIRE";
+    src: local('HOLLYWOODSTARFIRE'), local('HOLLYWOODSTARFIRE'),  url("fonts/HS/HOLLYWOOD STARFIRE.woff2") format("woff2");
+    font-style: normal;
+    font-display: swap;
+}

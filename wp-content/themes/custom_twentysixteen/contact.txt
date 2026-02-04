@@ -1,0 +1,29 @@
+  <div class="useer_contact">
+    <a class="togle_bottom" href="#contact" >contact</a>
+    <div  class="menuinfotext contact">
+
+        For video production, brand &amp; partnership enquiries please contact <a href="mailto:info@youremail.com">info@youremail.com</a>
+        (please note no submission enquiries will be answered through this email)
+
+    </div>
+    <a class="togle_bottom" href="#advertise" >advertise</a>
+    <div  class="menuinfotext advertise">
+
+
+         For advertising &amp; bespoke marketing solution enquiries please contact <a class="mit" href="mailto:advertising@youremail.com">advertising@youremail.com</a>
+
+
+    </div>
+  </div>
+
+    <div class="useer_social">
+        <a href="https://www.facebook.com/Shrink-Mode-340838153257833/" target="_blank">
+<img class="social" src="https://integralab.pp.ua/wp-content/themes/custom_twentysixteen/images/facebook.svg">
+        </a>
+        <a href="https://www.instagram.com/shrinkmode/"  target="_blank">
+            <img class="social" src="https://integralab.pp.ua/wp-content/themes/custom_twentysixteen/images/instagram.svg">
+        </a>
+        <a href="https://www.youtube.com/channel/UC7tUpVbZPpddEKKSjZQB87Q" target="_blank">
+            <img class="social" src="https://integralab.pp.ua/wp-content/themes/custom_twentysixteen/images/youtube.svg">
+        </a>
+    </div>

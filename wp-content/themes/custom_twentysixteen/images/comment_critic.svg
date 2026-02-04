@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="48"
+   viewBox="-21 -47 36.035191 36.000001"
+   width="48"
+   version="1.1"
+   id="svg10"
+   sodipodi:docname="comment_critic.svg"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs14" />
+  <sodipodi:namedview
+     id="namedview12"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="pt"
+     showgrid="false"
+     units="px"
+     inkscape:zoom="5.7360704"
+     inkscape:cx="38.528119"
+     inkscape:cy="25.714468"
+     inkscape:window-width="1600"
+     inkscape:window-height="837"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg10" />
+  <path
+     d="m 10.16935,-44.815731 h -26.126834 c -2.731672,0 -4.954179,2.222068 -4.954179,4.954179 v 15.989077 c 0,2.725953 2.21283,4.944501 4.936584,4.954179 v 7.255645 l 10.4271989,-7.255645 H 10.16935 c 2.731671,0 4.954178,-2.222508 4.954178,-4.954179 v -15.989077 c 0,-2.732111 -2.222507,-4.954179 -4.954178,-4.954179 z m 2.842741,20.943256 c 0,1.567301 -1.27522,2.842741 -2.842741,2.842741 H -6.2103431 l -7.6532989,5.32566 v -5.32566 h -2.093842 c -1.567522,0 -2.842742,-1.27544 -2.842742,-2.842741 v -15.989077 c 0,-1.567741 1.27522,-2.842741 2.842742,-2.842741 H 10.16935 c 1.567521,0 2.842741,1.275 2.842741,2.842741 z m 0,0"
+     id="path2"
+     style="stroke-width:0.056305;fill:#ffffff;fill-opacity:1" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:16.0095px;line-height:1.25;font-family:sans-serif;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.400238"
+     x="-18.632214"
+     y="-23.176126"
+     id="text2304"
+     transform="scale(0.90500998,1.1049602)"><tspan
+       sodipodi:role="line"
+       id="tspan2302"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.0095px;font-family:'Bebas Neue';-inkscape-font-specification:'Bebas Neue, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.400238;fill:#ffffff;fill-opacity:1"
+       x="-18.632214"
+       y="-23.176126">Critic</tspan></text>
+</svg>

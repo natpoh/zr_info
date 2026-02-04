@@ -1,0 +1,286 @@
+var wp_ajax = '/wp-admin/admin-ajax.php';
+jQuery(function ($) {
+    $(document).ready(function () {
+        init_author_autocomplite();
+        // Ajax search movie meta
+        $("body").on("keyup", ".search_text", function (e) {
+            var $this = $(this);
+            var $holder = $this.closest('.autocomplite');
+            var $results = $holder.find('.search_results').first();
+
+            $holder.find('button.clear').click(function () {
+                $this.val('');
+                $holder.find('.search_id').val('');
+                $results.removeClass('show');
+                return false;
+            });
+
+            $holder.find('button.clear').prop('disabled', false);
+
+            var keyword = $this.val();
+            if (keyword.length > 0) {
+                $.ajax({
+                    type: 'GET',
+                    dataType: "json",
+                    url: wp_ajax,
+                    data: {"action": "cm_autocomplite", "keyword": keyword},
+                    success: function (response) {
+                        if (response.type == "ok") {
+                            $results.html('');
+                            for (var i = 0; i < response.data.length; i++) {
+                                var id = response.data[i]['id'];
+                                var title = response.data[i]['title'];
+                                $results.append('<div class="result" data-id="' + id + '" data-title="' + title + '">' + title + ' [' + id + ']</div>');
+                            }
+                        }
+                        if (!$results.hasClass('show')) {
+                            $results.addClass('show');
+                        }
+
+                        $holder.find('.result').click(function () {
+                            var $this_res = $(this);
+                            $this.val($this_res.attr('data-title'));
+                            $holder.find('.search_id').val($this_res.attr('data-id'));
+                            $results.removeClass('show');
+                            return false;
+                        });
+                    }
+                });
+            }
+        });
+
+        $('select.bulk-actions').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var valueSelected = this.value;
+            if (valueSelected == 'changeauthor') {
+                $('select.bulk-actions').after('<div class="author-autocomplite autocomplite">\n\
+<input type="text" placeholder="New author Name or Id" class="change_author autocomplite">\n\
+<button class="clear button" disabled>Clear</button>\n\
+<input type="hidden" name="author_id" class="author_id" value="">\n\
+<div class="search_results"></div></div>')
+                init_author_autocomplite();
+            } else {
+                $('.change_author').remove();
+            }
+        });
+        $('#add-campaing-type').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var valueSelected = this.value;
+            console.log(valueSelected);
+            $('#campaign').attr('class', 'cm-type-' + valueSelected);
+        });
+
+        $('#find-channel').click(function () {
+            var yt_query = $('#yt_find').val();
+            var button = $(this);
+            if (!yt_query) {
+                return false;
+            }
+
+            if (button.hasClass('disabled')) {
+                return false;
+            }
+
+            $('#campaign').removeClass('yt_channel_valid');
+
+            button.addClass('disabled');
+
+            $.ajax({
+                type: 'GET',
+                dataType: "json",
+                url: wp_ajax,
+                data: {"action": "cm_find_yt_channel", "yt_query": yt_query},
+                success: function (response) {
+                    button.removeClass('disabled');
+                    if (response.valid == 1) {
+                        $('#campaign').addClass('yt_channel_valid');
+                        $('#yt_page').val(response.channel);
+                        $('#title').val(response.title);
+                        $('#site').val('https://www.youtube.com/channel/' + response.channel);
+                        $('#total_found').text(response.total);
+                        $('#error').text('');
+
+                    } else {
+                        $('#error').text(response.err);
+                    }
+                    console.log(response);
+                    //{"err":"","total":489,"channel":"UC337i8LcUSM4UMbLf820I8Q","valid":1}
+                    return false;
+                }
+            });
+
+            return false;
+        });
+
+        // Filter author
+        $('#filter_author').keyup(function () {
+            var a = $(this).val();
+            if (a.length > 2) {
+                // this finds all links in the list that contain the input,
+                // and hide the ones not containing the input while showing the ones that do
+                var containing = $('#overview tr.row').filter(function () {
+                    var regex = new RegExp('\\b' + a, 'i');
+                    var data_author = $(this).attr('data-author');
+                    return regex.test(data_author);
+                }).slideDown();
+                $('#overview tr.row').not(containing).slideUp();
+            } else {
+                $('#overview tr.row').slideDown();
+            }
+            return false;
+        });
+
+        $image_crop = null;
+
+        $('#upl_avatar').on('click', function () {
+            $('#avatar_file').click();
+            return false;
+        });
+
+        $('#avatar_file').on('change', function () {
+
+            $('#msgh').html('');
+            let allowedExtension = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            let type = this.files[0].type;
+            if (allowedExtension.indexOf(type) == -1) {
+                $('#msgh').html('<div class="msg-content msg error">This image is invalid. Supported only: .jpg, .png, .gif</div>');
+                return false;
+            }
+
+            $('#author_image').hide();
+            $('#upl_avatar').hide();
+
+            $('#upload-image').show();
+            $('.cropped_images').show();
+
+
+
+            $image_crop = $('#upload-image').croppie({
+                enableExif: true,
+                viewport: {
+                    width: 200,
+                    height: 200,
+                    type: 'square'
+                },
+                boundary: {
+                    width: 300,
+                    height: 300
+                }
+            });
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $image_crop.croppie('bind', {
+                    url: e.target.result
+                }).then(function () {
+                    // console.log('jQuery bind complete');
+                });
+            }
+            reader.readAsDataURL(this.files[0]);
+        });
+
+        $('#cropped_image').on('click', function (ev) {
+            var author = $('#author_id');
+            if (author.hasClass('proccess')) {
+                return false;
+            }
+
+            if ($image_crop === null) {
+                return false;
+            }
+
+            author.addClass('proccess');
+
+
+            $image_crop.croppie('result', {
+                type: 'canvas',
+                size: 'viewport'
+            }).then(function (response) {
+                $.ajax({
+                    url: "/wp-content/plugins/critic_matic/cron/ajax_pro_img.php",
+                    type: "POST",
+                    data: {"image": response, "author_id": author.attr('data-id')},
+                    success: function (data) {
+
+                        console.log(data);
+                        html = '<img src="' + response + '" />';
+                        $("#author_image").html(html);
+                        author.removeClass('proccess')
+
+                        cropped_success();
+                    }
+                });
+            });
+            return false;
+        });
+
+        $('#cropped_cancel').on('click', function (ev) {
+            cropped_success();
+            return false;
+        });
+
+    });
+
+    function cropped_success() {
+        $('#upload-image').hide();
+        $('.cropped_images').hide();
+
+        $('#author_image').show();
+        $('#upl_avatar').show();
+
+        $image_crop = null;
+        $('#upload-image').html('');
+        $('#avatar_file').val('');
+    }
+
+    function init_author_autocomplite() {
+        $('.change_author:not(.init)').each(function () {
+            var $this = $(this);
+            $this.addClass('init');
+            $this.keyup(function (e) {
+                var $holder = $this.closest('.author-autocomplite');
+                var $results = $holder.find('.search_results').first();
+
+                $holder.find('button.clear').click(function () {
+                    $this.val('');
+                    $holder.find('.author_id').val('');
+                    $results.removeClass('show');
+                    return false;
+                });
+
+                $holder.find('button.clear').prop('disabled', false);
+
+                var keyword = $this.val();
+                if (keyword.length >= 2) {
+                    $.ajax({
+                        type: 'GET',
+                        dataType: "json",
+                        url: wp_ajax,
+                        data: {"action": "cm_author_autocomplite", "keyword": keyword},
+                        success: function (response) {
+                            if (response.type == "ok") {
+                                $results.html('');
+                                for (var i = 0; i < response.data.length; i++) {
+                                    var id = response.data[i]['id'];
+                                    var title = response.data[i]['title'];
+                                    $results.append('<div class="result" data-id="' + id + '" data-title="' + title + '">' + title + ' [' + id + ']</div>');
+                                }
+                            }
+                            if (!$results.hasClass('show')) {
+                                $results.addClass('show');
+                            }
+
+                            $holder.find('.result').click(function () {
+                                var $this_res = $(this);
+                                $this.val($this_res.attr('data-title'));
+                                $holder.find('.author_id').val($this_res.attr('data-id'));
+                                $results.removeClass('show');
+                                return false;
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    }
+});

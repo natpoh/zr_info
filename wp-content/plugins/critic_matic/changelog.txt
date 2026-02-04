@@ -1,0 +1,71 @@
+26.08.2023
+Add search filters
+
+1.0.107 - 03.08.2023
+Include/Exclude ratings
+
+1.0.103 - 24.07.2023
++- Ratings
+
+1.0.100 - 12.07.2023
+Move show/hide facets to filters
+
+1.0.99 - 01.06.2023
+Add rating filters: MovieMeter, Eiga, Metacritic.
+Add actor country filter.
+
+1.0.98 - 31.05.2023
+No reset filters on type a new keyword
+
+1.0.97 - 26.05.2023
+Cancel search load if click to new item
+
+1.0.96 - 25.05.2023
+Add source site filter for reviews
+
+1.0.95 - 16.05.2023
+Search ajax GET->POST
+
+1.0.94 - 26.04.2023
+Critic parser clear read
+
+1.0.93 - 25.04.2023
+Refactor search facets
+Add facets ajax loading
+
+1.0.92 - 01.02.2023
+Add rating, popular, woke search sort
+
+1.0.91 - 18.01.2023
+Keywords filters. New ratings
+
+1.0.90 - 17.12.2022
+Search scroll to current filter in mob devices
+
+1.0.89 - 15.12.2022
+Join audience and staff
+
+1.0.88 - 12.11.2022
+Carma log
+
+1.0.87 - 3.11.2022
+User registration
+
+1.0.86 - 24.10.2022
+VideoGames in search
+
+1.0.85 - 20.10.2022
+User avatars
+
+1.0.84 - 26.09.2022
+Actors tabs
+
+1.0.83 - 21.09.2022
+Add Critic home tags
+Edit Audience IP
+
+1.0.82 - 16.09.2022
+Add movie weights
+
+1.0.81 - 16.09.2022
+Start changelog
