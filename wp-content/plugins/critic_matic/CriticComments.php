@@ -1151,7 +1151,7 @@ class CriticComments extends AbstractDB {
                 $ourbl_class = ' ourbl';
             }
 
-            $ret .= '<li id="comment-' . $comment->comment_ID . '" class="cmt lvl-' . $level . $post_a . $com_a . $hide_bl_class . $is_hidecm_class . $is_del_class . $ourbl_class . '" data-pid="' . $comment->comment_post_ID . '" data-type="' . $comment->post_type . '"  data-uid="' . $comment->user_id . '">';
+            $ret .= '<li id="comment-' . $comment->comment_ID . '" class="cmt sitem lvl-' . $level . $post_a . $com_a . $hide_bl_class . $is_hidecm_class . $is_del_class . $ourbl_class . '" data-id="'.$comment->comment_ID .'" data-pid="' . $comment->comment_post_ID . '" data-type="' . $comment->post_type . '"  data-uid="' . $comment->user_id . '">';
             if (!$is_del && !$is_hidecm) {
                 $ret .= $this->theme_comment($comment, $level, $is_editor);
             }

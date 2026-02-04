@@ -318,8 +318,9 @@ class SearchFacets extends AbstractDB {
 
     public function theme_search_url($search_url = '', $search_text = '', $inc = '', $user_filter_id = 0, $user_filter_edit = 0) {
         if ($search_url) {
+            $page = $this->get_search_page();
             ?>
-            <div id="search-url" data-id="<?php print $search_url ?>" data-title="<?php print $search_text ?>" data-inc="<?php print $inc ?>" data-uf="<?php print $user_filter_id ?>" data-ufe="<?php print $user_filter_edit ?>"></div>      
+            <div id="search-url" data-id="<?php print $search_url ?>" data-title="<?php print $search_text ?>" data-inc="<?php print $inc ?>" data-uf="<?php print $user_filter_id ?>" data-ufe="<?php print $user_filter_edit ?>" data-page="<?php print $page ?>"></div>      
             <?php
         }
     }

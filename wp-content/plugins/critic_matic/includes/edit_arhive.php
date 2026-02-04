@@ -219,7 +219,7 @@ if ($cid) {
                   <br />
                   <?php */ ?>
                 <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
-                <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">                  
+                <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">    
             </fieldset>
         </div>
     </form>

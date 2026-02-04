@@ -153,7 +153,7 @@ if ($cid) {
                     $parse_num = $options['parse_num'];
                     $previews_number = $this->cp->previews_number;
                     if ($campaign->type == 1) {
-                        $parse_num = $options['yt_parse_num'];
+                        $parse_num = $options['parse_num']??$options['yt_parse_num'];
                         $previews_number = $this->cp->yt_per_page;
                     }
                     ?>

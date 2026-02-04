@@ -1260,6 +1260,7 @@ class CPAdmin extends CriticParser {
         0 => 'No post',
     );
     public $yt_per_page = array(
+        1 => 1,
         5 => 5,
         10 => 10,
         25 => 25,
@@ -2303,7 +2304,7 @@ class CPCron {
         // Get last urls
         $urls = $this->cp->get_last_urls($urls_count, $status, $campaign->id);
         if ($debug) {
-            print_r($urls);
+            print_r(array('urls', $urls));
         }
         $count = sizeof($urls);
         if ($count) {
@@ -2318,6 +2319,9 @@ class CPCron {
             $parser_status = 3;
             $this->cp->update_campaign($campaign->id, array('parser_status' => $parser_status));
             $message = 'All URLS parsed. Parser paused';
+            if ($debug) {
+                print $message;
+            }
             $this->cp->log_info($message, $campaign->id, 0, 0);
         }
 
@@ -2376,9 +2380,15 @@ class CPCron {
             } else {
                 $last_update_all = isset($options[$type_name]['last_update_all']) ? $options[$type_name]['last_update_all'] : 0;
                 if ($last_update_all > 0) {
-                    $ret = $find->find_urls_yt($cid, $options, '', $preview);
+                    //$ret = $find->find_urls_yt($cid, $options, '', $preview);
+                    $client_id = base64_decode($options['yt_page']);
+                    $reg = '/<link [^>]*href="(https:\/\/www\.youtube\.com\/watch\?v=[^"]+)"/';
+                    $rss_url = 'https://www.youtube.com/feeds/videos.xml?channel_id=' . $client_id;
+                    $wait = 0;
+                    $ret = $find->parse_urls($cid, $reg, [$rss_url], $options, $wait, $preview);
+
                     if ($debug) {
-                        print "[$cid] Update last page. Last update all: $last_update_all\n";
+                        print "[$cid] Update last page by RSS\n";
                     }
                 } else {
                     $ret = $find->find_all_urls_yt($campaign, false);
@@ -3532,6 +3542,10 @@ class CPParsing {
                 // Check the post already in db
                 $post_exist = $this->cm->get_post_by_link_hash($link_hash);
 
+                if ($debug) {
+                    print_r(array('post_exist', $post_exist));
+                }
+
                 // 1. Validate campaign URL rules
                 if ($options['use_rules']) {
 
@@ -3558,6 +3572,9 @@ class CPParsing {
 
                         $cprules = $this->cp->get_cprules();
                         $message = 'Check URL:' . $new_status . '. ' . $cprules->show_check($check);
+                        if ($debug) {
+                            print_r(array($message));
+                        }
                         $this->cp->log_warn($message, $campaign->id, $item->id, 3);
                         return $changed;
                     }
@@ -3596,6 +3613,11 @@ class CPParsing {
                         $title = isset($items['t']) ? trim($items['t']) : '';
                         $author = isset($items['a']) ? trim(strip_tags($items['a'])) : '';
                         $date = isset($items['y']) ? strtotime($items['y']) : '';
+                    }
+
+                    if ($debug) {
+                        print_r(array('title', $title));
+                        print_r(array('content', $content));
                     }
 
                     if ($content && $title) {
@@ -3691,6 +3713,10 @@ class CPParsing {
                                 }
                                 return $changed;
                             }
+                        }
+
+                        if ($debug) {
+                            print_r(array('log_message', $log_message));
                         }
 
                         // Update url         
@@ -3813,7 +3839,7 @@ class CPYoutube {
         return $video_id;
     }
 
-    public function yt_video_data($url, $cache=true) {
+    public function yt_video_data($url, $cache = true) {
 
         $video_id = $this->find_url_video_id($url);
 
@@ -4159,9 +4185,9 @@ class CPRules {
         'w' => 0,
         'a' => 0,
         'n' => 0,
-      /*  'vmat'=>'',        
-        'vrul'=>'',
-        'vrat'=>0,*/
+            /*  'vmat'=>'',        
+              'vrul'=>'',
+              'vrat'=>0, */
     );
     public $rules_fields = array(
         'a' => 'Author',
@@ -4184,13 +4210,13 @@ class CPRules {
     public function __construct($cp = '') {
         $this->cp = $cp ? $cp : new CriticParser();
     }
-    
-    public $parser_valid_rules_type = array(        
+
+    public $parser_valid_rules_type = array(
         'z' => 'Above zero',
         'e' => 'Exist',
         'm' => 'Regexp match',
     );
-    
+
     /*
      * Rules
      */
@@ -4441,10 +4467,10 @@ class CPRules {
         return array('data' => $check, 'status' => $status);
     }
 
-    public function check_post($rules, $post, $all = false) {        
+    public function check_post($rules, $post, $all = false) {
         $results = array();
         if ($rules && sizeof($rules)) {
-            $rules_w = $this->sort_rules_by_weight($rules);           
+            $rules_w = $this->sort_rules_by_weight($rules);
             foreach ($rules_w as $key => $rule) {
                 if ($rule['r']) {
                     $reg = base64_decode($rule['r']);
@@ -4452,8 +4478,8 @@ class CPRules {
                     if ($fields) {
                         foreach ($fields as $field) {
                             if (isset($post[$field])) {
-                                $content = $post[$field];                                
-                                $match = preg_match($reg, $content);                                
+                                $content = $post[$field];
+                                $match = preg_match($reg, $content);
                                 $condition = isset($rule['c']) && $rule['c'] == 1 ? true : false;
                                 $result = -1;
                                 if ($match && $condition) {
@@ -4474,7 +4500,7 @@ class CPRules {
                 }
             }
         }
-        
+
         return $results;
     }
 
@@ -4639,12 +4665,12 @@ class CPRules {
                         <th><?php print __('Data field') ?></th> 
                         <th><?php print __('Weight') ?></th> 
                         <?php /*
-                        <th><?php print __('Valid Rating') ?></th>
-                        <th><?php print __('Valid Rule') ?></th>
-                        <th><?php print __('Valid Match') ?></th>                         
+                          <th><?php print __('Valid Rating') ?></th>
+                          <th><?php print __('Valid Rule') ?></th>
+                          <th><?php print __('Valid Match') ?></th>
                          */ ?>
                         <th><?php print __('Comment') ?></th>                       
-                        
+
                         <th><?php print __('Active') ?></th>
                         <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
@@ -4723,34 +4749,34 @@ class CPRules {
                                 <td>
                                     <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
-                                 <?php /*
-                                <td>
-                                    <input type="text" name="rule_reg_vrat_<?php print $rid ?>" class="rule_w" value="<?php print $rule['vrat'] ?>"<?php print $disabled ?>>
-                                </td>
-                                
-                                <td>                                    
-                                    <select name="rule_reg_vmat_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['vmat'];
-                                        foreach ($this->parser_valid_rules_type as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
-                                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
-                                            <?php
-                                        }
-                                        ?>                          
-                                    </select>    
-                                </td>
-                                
-                                <td>
-                                    <input type="text" name="rule_reg_vrul_<?php print $rid ?>" class="rule_m" value="<?php print $rule['vrul'] ?>"<?php print $disabled ?>>
-                                </td>
-                                  
-                                  */ ?>
+                                <?php /*
+                                  <td>
+                                  <input type="text" name="rule_reg_vrat_<?php print $rid ?>" class="rule_w" value="<?php print $rule['vrat'] ?>"<?php print $disabled ?>>
+                                  </td>
+
+                                  <td>
+                                  <select name="rule_reg_vmat_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                  <?php
+                                  $con = $rule['vmat'];
+                                  foreach ($this->parser_valid_rules_type as $key => $name) {
+                                  $selected = ($key == $con) ? 'selected' : '';
+                                  ?>
+                                  <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>
+                                  <?php
+                                  }
+                                  ?>
+                                  </select>
+                                  </td>
+
+                                  <td>
+                                  <input type="text" name="rule_reg_vrul_<?php print $rid ?>" class="rule_m" value="<?php print $rule['vrul'] ?>"<?php print $disabled ?>>
+                                  </td>
+
+                                 */ ?>
                                 <td>
                                     <input type="text" name="rule_reg_c_<?php print $rid ?>" class="rule_c" value="<?php print $rule['c'] ?>"<?php print $disabled ?>>
                                 </td>
-                                
+
                                 <td>
                                     <?php
                                     $checked = '';
@@ -4837,31 +4863,31 @@ class CPRules {
                                     ?>                          
                                 </select> 
                             </td>
-                                                        <td>
+                            <td>
                                 <input type="text" name="reg_new_rule_w" class="rule_w" value="0">
                             </td>
-                             <?php /*
-                            <td>
-                                <input type="text" name="reg_new_rule_vrat" class="rule_w" value="0">
-                            </td>
-                            <td>
-                                <select name="reg_new_rule_vmat" class="condition">
-                                    <?php foreach ($this->parser_valid_rules_type as $key => $name) { ?>
-                                        <option value="<?php print $key ?>"><?php print $name ?></option>                                
-                                        <?php
-                                    }
-                                    ?>                         
-                                </select> 
-                            </td>
-                            
-                            <td>
-                                <input type="text" name="reg_new_rule_vrul" class="rule_m" value="">
-                                <div class="desc">
-                                    Example: /(pattern)/Uis
-                                </div>
-                            </td>                            
-                              
-                              */ ?>
+                            <?php /*
+                              <td>
+                              <input type="text" name="reg_new_rule_vrat" class="rule_w" value="0">
+                              </td>
+                              <td>
+                              <select name="reg_new_rule_vmat" class="condition">
+                              <?php foreach ($this->parser_valid_rules_type as $key => $name) { ?>
+                              <option value="<?php print $key ?>"><?php print $name ?></option>
+                              <?php
+                              }
+                              ?>
+                              </select>
+                              </td>
+
+                              <td>
+                              <input type="text" name="reg_new_rule_vrul" class="rule_m" value="">
+                              <div class="desc">
+                              Example: /(pattern)/Uis
+                              </div>
+                              </td>
+
+                             */ ?>
                             <td>
                                 <input type="text" name="reg_new_rule_c" class="rule_c" value="" placeholder="Comment">
                             </td>

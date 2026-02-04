@@ -70,7 +70,7 @@ class CriticMatic extends AbstractDB {
     );
     public $post_show_in = array(
         0 => 'Critic',
-        1 => 'Media',        
+        1 => 'Media',
     );
     public $post_view_type_url = array(
         'www.youtube.com' => 1,
@@ -204,10 +204,10 @@ class CriticMatic extends AbstractDB {
     private $reader_city;
     private $geoip;
     /* Sync */
-    public $sync_status = 0;
-    public $sync_client = true;
-    public $sync_server = false;
-    public $sync_data = true;
+    public $sync_data = DB_SYNC_DATA == 1 ? true : false;
+    public $sync_status = DB_SYNC_MODE;
+    public $sync_client = DB_SYNC_MODE == 2 ? true : false;
+    public $sync_server = DB_SYNC_MODE == 1 ? true : false;
     public $sync_status_types = array(
         1 => 'Server',
         2 => 'Client',
@@ -239,7 +239,7 @@ class CriticMatic extends AbstractDB {
             'cm_camp_tags' => 'cm_camp_tags',
             'cm_camp_tag_meta' => 'cm_camp_tag_meta',
             // Meta links
-            'meta_compilation_links'=>'meta_compilation_links',
+            'meta_compilation_links' => 'meta_compilation_links',
         );
         $this->timer_start();
 
@@ -285,11 +285,6 @@ class CriticMatic extends AbstractDB {
             'actors_main_wait' => 30,
             'critics_unique' => 0,
         );
-
-        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
-        $this->sync_status = DB_SYNC_MODE;
-        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
-        $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
 
         if ($this->sync_client) {
             unset($this->author_tabs['edit']);
@@ -534,7 +529,7 @@ class CriticMatic extends AbstractDB {
         }
         return $this->wl;
     }
-    
+
     public function get_ccrowd() {
         if (!$this->ccrowd) {
             if (!class_exists('CriticCrowd')) {
@@ -544,7 +539,6 @@ class CriticMatic extends AbstractDB {
         }
         return $this->ccrowd;
     }
-    
 
     public function get_wpu() {
         if (!$this->wpu) {
@@ -676,9 +670,9 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_fetch_row($sql);
         return $result;
     }
-    
-    public function get_posts_by_ids($ids=array()) {
-        $sql = "SELECT * FROM {$this->db['posts']} WHERE id IN(".implode(',',$ids).")";
+
+    public function get_posts_by_ids($ids = array()) {
+        $sql = "SELECT * FROM {$this->db['posts']} WHERE id IN(" . implode(',', $ids) . ")";
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1044,7 +1038,7 @@ class CriticMatic extends AbstractDB {
       2 => 'Manual'
      */
 
-    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true, $show_in=0) {
+    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true, $show_in = 0) {
         $link_hash = '';
         $link_id = 0;
         if ($link) {
@@ -1077,7 +1071,7 @@ class CriticMatic extends AbstractDB {
             'top_movie' => $top_movie,
             'view_type' => $view_type,
             'link_id' => $link_id,
-            'show_in'=>$show_in,
+            'show_in' => $show_in,
         );
 
         $id = $this->sync_insert_data($data, $this->db['posts']);
@@ -1827,14 +1821,14 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
-    public function remove_author_cache($aid=0, $uid=0) {
-        if ($aid==0){
-            if ($uid>0){
+    public function remove_author_cache($aid = 0, $uid = 0) {
+        if ($aid == 0) {
+            if ($uid > 0) {
                 $author = $this->get_author_by_wp_uid($uid);
                 $aid = $author->id;
             }
         }
-        if ($aid==0){
+        if ($aid == 0) {
             return false;
         }
 
@@ -2432,7 +2426,7 @@ class CriticMatic extends AbstractDB {
                 'show_type' => $show_type,
                 'last_upd' => $curr_time,
             );
-            
+
             $this->remove_author_cache($id);
 
             $this->sync_update_data($data, $id, $this->db['authors']);
@@ -2790,7 +2784,7 @@ class CriticMatic extends AbstractDB {
             'tid' => $tid,
             'cid' => $aid,
         );
-        $this->sync_delete_multi($data, $this->db['tag_meta'],  10);
+        $this->sync_delete_multi($data, $this->db['tag_meta'], 10);
     }
 
     public function remove_author_tags($aid) {
@@ -2801,7 +2795,7 @@ class CriticMatic extends AbstractDB {
                     'tid' => $tag->id,
                     'aid' => $aid,
                 );
-                $this->sync_delete_multi($data, $this->db['tag_meta'],  10);
+                $this->sync_delete_multi($data, $this->db['tag_meta'], 10);
             }
         }
     }
@@ -3296,19 +3290,19 @@ class CriticMatic extends AbstractDB {
         $ret = $this->get_rating_array($result);
         return $ret;
     }
-    
-    public function get_posts_rating($ids=array()) {
-        $sql = "SELECT * FROM {$this->db['rating']} WHERE cid IN(".implode(',',$ids).")";
+
+    public function get_posts_rating($ids = array()) {
+        $sql = "SELECT * FROM {$this->db['rating']} WHERE cid IN(" . implode(',', $ids) . ")";
         $result = $this->db_results($sql);
         $ret = array();
-        if ($result){
+        if ($result) {
             foreach ($result as $item) {
                 $ret[$item->cid] = $this->get_rating_array($item);
-            }            
+            }
         }
         return $ret;
     }
-    
+
     public function get_post_rating_id($cid) {
         $sql = sprintf("SELECT id FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
         $result = $this->db_get_var($sql);
@@ -4960,8 +4954,8 @@ class CriticMatic extends AbstractDB {
 
         return $slug;
     }
-    
-    public function get_meta_compilation_link($id){
+
+    public function get_meta_compilation_link($id) {
         $sql = sprintf("SELECT * FROM {$this->db['meta_compilation_links']} WHERE id=%d", (int) $id);
         $result = $this->db_fetch_row($sql);
         return $result;
