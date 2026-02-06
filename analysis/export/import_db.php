@@ -267,7 +267,7 @@ class Import
         }
         return $result;
     }
-    public static function get_remote_id($array, $debug=false)
+    public static function get_remote_id($array)
     {
 
         $key = self::get_key();
@@ -285,16 +285,7 @@ class Import
             'action'=>'get_remote_id',
             'key'=>$key,
         );
-        
-        if ($debug){
-            print_r(array($link,$request));
-        }
-        
         $result =  GETCURL::getCurlCookie($link,'',$request);
-        
-        if ($debug){
-            print_r(array('result',$result));
-        }
         if ($result)
         {
             $result = json_decode($result,1);
@@ -692,37 +683,23 @@ class Import
 
         if (DB_SYNC_MODE == 2) {
 
-            $table_access = self::get_table_access($table);
 
+                    ///get remote id
+                    $array = array('table' => $table, 'column' => 'id');
+                    $id_array = self::get_remote_id($array);
 
-            if ( $table_access['export']==1 )
-            {
-                return [1,0];
-            }
-            else if ( $table_access['export']==3 )
-            {
-                return [0,0];
-            }
-            else
-            {
-                ///get remote id
-                $array = array('table' => $table, 'column' => 'id');
-                $id_array = self::get_remote_id($array);
+                    $id = $id_array['id'];
+                    if ($id) {
+                        $last_id_array = self::get_last_id($table);
 
-                $id = $id_array['id'];
-                if ($id) {
-                    $last_id_array = self::get_last_id($table);
-
-                    $last_id = $last_id_array['id'] + 1;
-                    if ($last_id > $id) {
-                        $id = $last_id;
+                        $last_id = $last_id_array['id'] + 1;
+                        if ($last_id > $id) {
+                            $id = $last_id;
+                        }
+                        return [1,$id];
                     }
-                    return [1,$id];
-                }
 
-                return [0,0];
-            }
-
+            return [0,0];
 
 
         }
@@ -954,11 +931,10 @@ class Import
         $remote = $_SERVER['REMOTE_ADDR'];
         $remote_data = $options_data['remote_ip'];
 
-        if (!strstr($remote,$remote_data))
-        {
-            return array('error'=>'false remote ip '.$remote_data.'!='.$remote);
-        }
-
+	    if (!strstr($remote,$remote_data))
+	    {
+		    return array('error'=>'false remote ip '.$remote_data.'!='.$remote);
+	    }
     }
 
     public static function sync_data($data)
@@ -1301,10 +1277,6 @@ class Import
             $result['last_sinc_commits']  = self::generate_request($array_sql);
 
         }
-        else
-        {
-            $result['last_sinc_commits'] = '$array_sql is empty ';
-        }
 
         $res_return['result']=$result;
 
@@ -1351,7 +1323,7 @@ class Import
     public static function prepare_data($data)
     {
 
-        global $debug;
+
 
         $action = $data['action'];
 //        if ($action == 'last_commit') {
