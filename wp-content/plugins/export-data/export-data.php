@@ -28,6 +28,7 @@ class Export_data
         add_menu_page(__('Export'), __('Export'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
         add_submenu_page($this->parrent_slug, __('Export overview'), __('Overview'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
         add_submenu_page($this->parrent_slug, __('Options'), __('Options'), $this->access_level, $this->parrent_slug. '_export_options', array($this, 'options'));
+        add_submenu_page($this->parrent_slug, __('Logs'), __('Logs'), $this->access_level, $this->parrent_slug. '_logs', array($this, 'logs'));
 
 
 
@@ -100,6 +101,24 @@ AND table_schema='imdbvisualization'";
 
 
         }
+
+    }
+
+    public function logs()
+    {
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+        echo '<h1>Logs</h1>';
+
+        $array_rows = array(
+            'id' => array('w' => 5),
+            'action' => array('w' => 10),
+            'function_name' => array('w' => 15),
+            'request' => array('w' => 30, 'type' => 'textarea', 'textarea_rows'=>5),
+            'response' => array('w' => 30, 'type' => 'textarea', 'textarea_rows'=>5),
+            'created_at' => array('w' => 10)
+        );
+
+        Crowdsource::Show_admin_table('import_db_logs', $array_rows, 1, 'import_db_logs', '', 1, 1, 0, 0, 0);
 
     }
 

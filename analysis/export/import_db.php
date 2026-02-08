@@ -24,6 +24,15 @@ class Import
         return 0;
     }
 
+    public static function log_action($action, $function_name, $request, $response)
+    {
+        if (is_array($request)) $request = json_encode($request, JSON_UNESCAPED_UNICODE);
+        if (is_array($response)) $response = json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        $sql = "INSERT INTO `import_db_logs` (`action`, `function_name`, `request`, `response`) VALUES (?, ?, ?, ?)";
+        Pdo_an::db_results_array($sql, array($action, $function_name, $request, $response));
+    }
+
     static $timing =[];
 
     public static function timer_start_data()
@@ -168,6 +177,7 @@ class Import
     );
 
     $result =  GETCURL::getCurlCookie($link,'',$request);
+    self::log_action('commit_info_request', 'commit_info_request', $request, $result);
 
 
     if ($result)
@@ -261,6 +271,7 @@ class Import
             'key'=>$key,
         );
         $result =  GETCURL::getCurlCookie($link,'',$request);
+        self::log_action('get_remote_last_id', 'get_remote_last_id', $request, $result);
         if ($result)
         {
             $result = json_decode($result,1);
@@ -286,6 +297,7 @@ class Import
             'key'=>$key,
         );
         $result =  GETCURL::getCurlCookie($link,'',$request);
+        self::log_action('get_remote_id', 'get_remote_id', $request, $result);
         if ($result)
         {
             $result = json_decode($result,1);
@@ -326,6 +338,7 @@ class Import
 
 
        $result =  GETCURL::getCurlCookie($link,'',$request);
+       self::log_action('push_request', 'push_request', $request, $result);
 
 
 
