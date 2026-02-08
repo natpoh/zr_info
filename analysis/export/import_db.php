@@ -57,6 +57,7 @@ class Import
     public static function generate_request($array_sql)
     {
         $result =[];
+        self::log_action('generate_request_start', 'generate_request', $array_sql, '');
 
 
     foreach ($array_sql as $i =>$v)
@@ -68,11 +69,13 @@ class Import
         ///self::update_status($uid,2,$time_current);////send request
         ///get data
         $sql_data =  self::commit_info_request($uid);  ///get remote sql from commit
+        self::log_action('generate_request_got_sql_data', 'generate_request', ['uid'=>$uid], $sql_data);
 
         //if(self::debug()){$result['sql_data']=$sql_data;}
 
         if ($sql_data["error"])
         {
+            self::log_action('generate_request_error', 'generate_request', ['uid'=>$uid], $sql_data);
             self::update_status($uid,1,$time_current);////update to 1
              $result[$uid]['return']=$sql_data;
 
@@ -84,19 +87,24 @@ class Import
             $result[$uid]['sql_data']=$sql_data;
 
             $update_data = self::set_data($sql_data); ///update site data from sql
+            self::log_action('generate_request_set_data_result', 'generate_request', ['uid'=>$uid], $update_data);
+
             if ($update_data) {
                 $result[$uid]['update_data'] = $update_data;
                  self::update_commit_data($uid, $update_data, $time_current); ///update to status 4
+                 self::log_action('generate_request_update_commit', 'generate_request', ['uid'=>$uid], 'Updated commit data and status 4');
             }
             else
             {
                 self::update_status($uid,7);////update to 7 no data return
                 $result[$uid]['return']='empty';
+                self::log_action('generate_request_empty', 'generate_request', ['uid'=>$uid], 'Status 7 set');
             }
         }
         else
         {
             self::update_status($uid,1,$time_current);////update to 1
+            self::log_action('generate_request_no_sql', 'generate_request', ['uid'=>$uid], 'Status 1 set (no sql)');
         }
 
     }
@@ -1264,6 +1272,7 @@ class Import
         self::timer_start_data();
 
         $array_sql =  self::last_sinc_commits($data);
+        self::log_action('sync_last_commit_array_sql', 'sync_last_commit', $data, $array_sql);
 
         $res_return['last_sinc_commits']=count($array_sql);
 
@@ -1282,12 +1291,14 @@ class Import
                 $uid = $v["uniq_id"];
                 ////update request status
                 self::update_status($uid, 2);////send request
+                self::log_action('send_request_status_2', 'sync_last_commit', ['uid' => $uid], 'Status updated to 2');
             }
 
 
             ////get data from remote url  and add to db set status 4
 
             $result['last_sinc_commits']  = self::generate_request($array_sql);
+            self::log_action('generate_request_result', 'sync_last_commit', $array_sql, $result['last_sinc_commits']);
 
         }
 
