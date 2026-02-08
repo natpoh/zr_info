@@ -47,6 +47,12 @@ class Import
 
         $sql = "INSERT INTO `import_db_logs` (`action`, `function_name`, `request`, `response`, `status`) VALUES (?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql, array($action, $function_name, $request, $response, $status));
+
+        // Cleanup logs older than 1 day (run with 1% probability to save resources)
+        if (rand(1, 100) == 1) {
+            $sql_cleanup = "DELETE FROM `import_db_logs` WHERE `created_at` < NOW() - INTERVAL 1 DAY";
+            Pdo_an::db_query($sql_cleanup);
+        }
     }
 
     static $timing =[];
