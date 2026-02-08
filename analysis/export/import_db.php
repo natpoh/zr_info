@@ -184,8 +184,11 @@ class Import
         'limit'=>$limit,
     );
 
+    $log_request = ['link'=>$link, 'request'=>$request];
+    self::log_action('commit_info_request_start', 'commit_info_request', $log_request, '');
+
     $result =  GETCURL::getCurlCookie($link,'',$request);
-    self::log_action('commit_info_request', 'commit_info_request', $request, $result);
+    self::log_action('commit_info_request_end', 'commit_info_request', $log_request, $result);
 
 
     if ($result)
