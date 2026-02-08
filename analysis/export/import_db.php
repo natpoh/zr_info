@@ -84,6 +84,7 @@ class Import
         $time_current = self::timer_stop_data();
         ///self::update_status($uid,2,$time_current);////send request
         ///get data
+        self::log_action('generate_request_before_commit_info_request', 'generate_request', ['uid'=>$uid], '');
         $sql_data =  self::commit_info_request($uid);  ///get remote sql from commit
         self::log_action('generate_request_got_sql_data', 'generate_request', ['uid'=>$uid], $sql_data);
 
@@ -185,6 +186,7 @@ class Import
 
     public static function commit_info_request($uid)
 {
+    self::log_action('commit_info_request_start', 'commit_info_request', ['uid'=>$uid], '');
 
     $key = self::get_key();
     $options_data = self::get_import_data();
@@ -200,10 +202,13 @@ class Import
         'limit'=>$limit,
     );
 
+
+    
     $log_request = ['link'=>$link, 'request'=>$request];
-    self::log_action('commit_info_request_start', 'commit_info_request', $log_request, '');
+    self::log_action('commit_info_request_request', 'commit_info_request', $log_request, '');
 
     $result =  GETCURL::getCurlCookie($link,'',$request);
+    self::log_action('commit_info_request_result', 'commit_info_request', $result, '');
     
     try {
         $log_result = $result;
