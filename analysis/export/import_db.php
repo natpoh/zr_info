@@ -26,8 +26,24 @@ class Import
 
     public static function log_action($action, $function_name, $request, $response, $status = 0)
     {
-        if (is_array($request)) $request = json_encode($request, JSON_UNESCAPED_UNICODE);
-        if (is_array($response)) $response = json_encode($response, JSON_UNESCAPED_UNICODE);
+        if (is_array($request)) 
+        {
+            try{
+            $request = json_encode($request, JSON_UNESCAPED_UNICODE);
+        }catch (Throwable $e) {
+            $request = 'Error converting request: ' . $e->getMessage();
+        }
+    }
+           
+
+        if (is_array($response)) 
+        {
+            try{
+                $response = json_encode($response, JSON_UNESCAPED_UNICODE);
+            }catch (Throwable $e) {
+                $response = 'Error converting response: ' . $e->getMessage();
+            }
+        }
 
         $sql = "INSERT INTO `import_db_logs` (`action`, `function_name`, `request`, `response`, `status`) VALUES (?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql, array($action, $function_name, $request, $response, $status));
@@ -188,7 +204,24 @@ class Import
     self::log_action('commit_info_request_start', 'commit_info_request', $log_request, '');
 
     $result =  GETCURL::getCurlCookie($link,'',$request);
-    self::log_action('commit_info_request_end', 'commit_info_request', $log_request, $result);
+    
+    try {
+        $log_result = $result;
+        if (is_string($result)) {
+            $decoded = json_decode($result, true);
+            if ($decoded) {
+                $log_result = $decoded; 
+            } else {
+                 if (strlen($result) > 1000) {
+                     $log_result = substr($result, 0, 1000) . '... (truncated)';
+                 }
+            }
+        } 
+    } catch (Throwable $e) {
+        $log_result = 'Error converting response: ' . $e->getMessage();
+    }
+    
+    self::log_action('commit_info_request_end', 'commit_info_request', $log_request, $log_result);
 
 
     if ($result)
