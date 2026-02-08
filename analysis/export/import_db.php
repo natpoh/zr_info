@@ -29,10 +29,10 @@ class Import
         if (is_array($request)) 
         {
             try{
-            $request = json_encode($request, JSON_UNESCAPED_UNICODE);
-        }catch (Throwable $e) {
-            $request = 'Error converting request: ' . $e->getMessage();
-        }
+                $request = json_encode($request, JSON_UNESCAPED_UNICODE);
+            }catch (Throwable $e) {
+                $request = 'Error converting request: ' . $e->getMessage();
+            }
     }
            
 
