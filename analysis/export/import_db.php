@@ -24,13 +24,13 @@ class Import
         return 0;
     }
 
-    public static function log_action($action, $function_name, $request, $response)
+    public static function log_action($action, $function_name, $request, $response, $status = 0)
     {
         if (is_array($request)) $request = json_encode($request, JSON_UNESCAPED_UNICODE);
         if (is_array($response)) $response = json_encode($response, JSON_UNESCAPED_UNICODE);
 
-        $sql = "INSERT INTO `import_db_logs` (`action`, `function_name`, `request`, `response`) VALUES (?, ?, ?, ?)";
-        Pdo_an::db_results_array($sql, array($action, $function_name, $request, $response));
+        $sql = "INSERT INTO `import_db_logs` (`action`, `function_name`, `request`, `response`, `status`) VALUES (?, ?, ?, ?, ?)";
+        Pdo_an::db_results_array($sql, array($action, $function_name, $request, $response, $status));
     }
 
     static $timing =[];
@@ -1349,10 +1349,16 @@ class Import
 
 
             $result['sync'] = self::sync($data);             ///sync - send data to remote server and change status to 1
+            self::log_action('sync', 'sync', $data, $result['sync']);
 
             $result['sync_last_commit'] = self::sync_last_commit($data);    ///sync_last_commit - get commit in status 1 and add from remote site update status to 4
+            self::log_action('sync_last_commit', 'sync_last_commit', $data, $result['sync_last_commit']);
+
             $result['sync_complete'] = self::sync_complete($data);
+            self::log_action('sync_complete', 'sync_complete', $data, $result['sync_complete']);
+
             $result['sync_empty'] = self::sync_complete($data,7,7);
+            self::log_action('sync_empty', 'sync_complete_empty', $data, $result['sync_empty']);
 
             self::service();///delete and change status for old commit
 

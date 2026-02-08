@@ -9,12 +9,13 @@ $sql = "CREATE TABLE IF NOT EXISTS `import_db_logs` (
   `function_name` VARCHAR(255) NULL,
   `request` LONGTEXT NULL,
   `response` LONGTEXT NULL,
+  `status` INT(11) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
 try {
     Pdo_an::db_query($sql);
-    echo "Table import_db_logs created successfully.";
+    echo "Table import_db_logs created/checked successfully.";
 } catch (Exception $e) {
     echo "Error creating table: " . $e->getMessage();
 }
